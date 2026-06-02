@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: puertas-tibia-map-visualizer-api
+    runtime: node
+    rootDir: backend
+    plan: free
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
