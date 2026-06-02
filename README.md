@@ -1,8 +1,45 @@
 # Puerta's Tibia Map Visualizer
 
+![Node.js](https://img.shields.io/badge/Node.js-20%2B-339933?style=for-the-badge&logo=node.js&logoColor=white)
+![React](https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge&logo=react&logoColor=20232A)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite-5-646CFF?style=for-the-badge&logo=vite&logoColor=white)
+![Express](https://img.shields.io/badge/Express-API-000000?style=for-the-badge&logo=express&logoColor=white)
+![Leaflet](https://img.shields.io/badge/Leaflet-Maps-199900?style=for-the-badge&logo=leaflet&logoColor=white)
+![Status](https://img.shields.io/badge/status-em%20desenvolvimento-f59e0b?style=for-the-badge)
+![License](https://img.shields.io/badge/licen%C3%A7a-educacional-8b5cf6?style=for-the-badge)
+
 Aplicacao web local para visualizar, marcar e exportar mapas do Tibia a partir dos arquivos de minimapa do jogo.
 
-O projeto combina um backend em Node.js/Express, responsavel por ler e processar os arquivos locais, com um frontend em React/Vite que exibe o mapa com Leaflet e permite desenhar marcacoes sobre os andares.
+O projeto combina um backend em Node.js/Express, responsavel por ler e processar arquivos locais, com um frontend em React/Vite que exibe o mapa com Leaflet e permite desenhar marcacoes sobre cada andar.
+
+## Sumario
+
+- [Preview](#preview)
+- [Recursos](#recursos)
+- [Stack](#stack)
+- [Requisitos](#requisitos)
+- [Como Rodar](#como-rodar)
+- [Fluxo de Uso](#fluxo-de-uso)
+- [Estrutura do Projeto](#estrutura-do-projeto)
+- [API Principal](#api-principal)
+- [Build](#build)
+- [Troubleshooting](#troubleshooting)
+- [Licenca](#licenca)
+
+## Preview
+
+```txt
+Backend local + Frontend web + arquivos de minimapa do Tibia
+
+Minimap_Color_*.png
+        |
+        v
+  Importacao e tiles
+        |
+        v
+Visualizador por andar + marcacoes + exportacao PNG
+```
 
 ## Recursos
 
@@ -18,21 +55,11 @@ O projeto combina um backend em Node.js/Express, responsavel por ler e processar
 
 ## Stack
 
-**Backend**
-
-- Node.js
-- Express
-- TypeScript
-- Sharp
-
-**Frontend**
-
-- React
-- Vite
-- TypeScript
-- Leaflet
-- Fabric.js
-- Axios
+| Camada | Tecnologias |
+| --- | --- |
+| Backend | Node.js, Express, TypeScript, Sharp |
+| Frontend | React, Vite, TypeScript, Leaflet, Fabric.js, Axios |
+| Dados locais | PNG, JSON, tiles por andar |
 
 ## Requisitos
 
