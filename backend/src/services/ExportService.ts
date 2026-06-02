@@ -3,7 +3,7 @@ import os from "os";
 import path from "path";
 import sharp from "sharp";
 import { TileGeneratorService, TileMetadata } from "./TileGeneratorService";
-import { getTilesDir } from "../utils/fileUtils";
+import { getDataDir, getTilesDir } from "../utils/fileUtils";
 
 type Point = { x: number; y: number };
 
@@ -31,8 +31,8 @@ interface Bounds {
 
 const TILE_SIZE = 256;
 const TRANSPARENT_BLACK_THRESHOLD = 2;
-const MAX_EXPORT_PIXELS = Number(process.env.EXPORT_MAX_PIXELS ?? 8_000_000);
-const EXPORT_COMPOSITE_BATCH_SIZE = Number(process.env.EXPORT_COMPOSITE_BATCH_SIZE ?? 6);
+const MAX_EXPORT_PIXELS = Number(process.env.EXPORT_MAX_PIXELS ?? 2_500_000);
+const EXPORT_COMPOSITE_BATCH_SIZE = Number(process.env.EXPORT_COMPOSITE_BATCH_SIZE ?? 24);
 
 sharp.cache({ memory: 32, files: 0, items: 64 });
 sharp.concurrency(1);
@@ -178,7 +178,23 @@ async function prepareTileInput(input: string, options: { transparentBlack: bool
     return input;
   }
 
-  const output = path.join(options.tempDir, `${path.basename(input, ".png")}_${Date.now()}_${Math.random().toString(16).slice(2)}.png`);
+  const stats = await fs.promises.stat(input);
+  const exportCacheDir = path.join(getDataDir(), "export-cache");
+  await fs.promises.mkdir(exportCacheDir, { recursive: true });
+
+  const cacheKey = [
+    path.basename(input, ".png"),
+    options.transparentBlack ? "transparent" : "opaque",
+    `scale_${options.scale.toFixed(4).replace(".", "_")}`,
+    `mtime_${Math.round(stats.mtimeMs)}`,
+    `size_${stats.size}`,
+  ].join("__");
+  const output = path.join(exportCacheDir, `${cacheKey}.png`);
+
+  if (fs.existsSync(output)) {
+    return output;
+  }
+
   let pipeline: sharp.Sharp;
 
   if (options.transparentBlack) {
@@ -237,6 +253,10 @@ async function compositeBatch(
     .composite(overlays)
     .png({ compressionLevel: 6 })
     .toFile(output);
+
+  if (currentFile.startsWith(tempDir)) {
+    await fs.promises.rm(currentFile, { force: true });
+  }
 
   return output;
 }

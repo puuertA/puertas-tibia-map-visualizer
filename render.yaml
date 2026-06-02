@@ -12,6 +12,6 @@ services:
       - key: FRONTEND_ORIGIN
         value: https://puertas-tibia-map-visualizer.netlify.app
       - key: EXPORT_MAX_PIXELS
-        value: "4000000"
+        value: "2500000"
       - key: EXPORT_COMPOSITE_BATCH_SIZE
-        value: "4"
+        value: "24"
