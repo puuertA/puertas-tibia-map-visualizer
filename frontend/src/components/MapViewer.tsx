@@ -8,6 +8,8 @@ import { ExportAnnotation } from "../types/ExportAnnotation";
 
 interface MapViewerProps {
   selectedFloor: number;
+  showGlobalAnnotations: boolean;
+  showFloorAnnotations: boolean;
   showPlaceLabels: boolean;
   annotationsRevision: number;
   annotationsByFloor: Record<number, ExportAnnotation[]>;
@@ -82,6 +84,8 @@ function CrosshairIcon() {
 
 export function MapViewer({
   selectedFloor,
+  showGlobalAnnotations,
+  showFloorAnnotations,
   showPlaceLabels,
   annotationsRevision,
   annotationsByFloor,
@@ -434,6 +438,9 @@ export function MapViewer({
           clearNonce={clearNonce}
           annotationsRevision={annotationsRevision}
           initialAnnotations={annotationsByFloor[selectedFloor] ?? []}
+          annotationsByFloor={annotationsByFloor}
+          showGlobalAnnotations={showGlobalAnnotations}
+          showFloorAnnotations={showFloorAnnotations}
           onHistoryChange={({ canUndo: undo, canRedo: redo }) => {
             setCanUndo(undo);
             setCanRedo(redo);

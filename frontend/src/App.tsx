@@ -22,6 +22,8 @@ function App() {
   const [refreshing, setRefreshing] = useState(false);
   const [annotationsByFloor, setAnnotationsByFloor] = useState<Record<number, ExportAnnotation[]>>({});
   const [annotationsRevision, setAnnotationsRevision] = useState(0);
+  const [showGlobalAnnotations, setShowGlobalAnnotations] = useState(true);
+  const [showFloorAnnotations, setShowFloorAnnotations] = useState(true);
   const [showPlaceLabels, setShowPlaceLabels] = useState(false);
   const [tutorialOpen, setTutorialOpen] = useState(false);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
@@ -134,7 +136,11 @@ function App() {
 
         <FloorSelector floor={selectedFloor} onFloorChange={setSelectedFloor} />
         <LayerPanel
+          showGlobalAnnotations={showGlobalAnnotations}
+          showFloorAnnotations={showFloorAnnotations}
           showPlaceLabels={showPlaceLabels}
+          onShowGlobalAnnotationsChange={setShowGlobalAnnotations}
+          onShowFloorAnnotationsChange={setShowFloorAnnotations}
           onShowPlaceLabelsChange={setShowPlaceLabels}
         />
         <section className="panel" data-tour="annotations">
@@ -174,6 +180,8 @@ function App() {
         </header>
         <MapViewer
           selectedFloor={selectedFloor}
+          showGlobalAnnotations={showGlobalAnnotations}
+          showFloorAnnotations={showFloorAnnotations}
           showPlaceLabels={showPlaceLabels}
           annotationsRevision={annotationsRevision}
           annotationsByFloor={annotationsByFloor}

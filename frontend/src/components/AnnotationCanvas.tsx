@@ -15,6 +15,9 @@ interface AnnotationCanvasProps {
   clearNonce: number;
   annotationsRevision: number;
   initialAnnotations?: ExportAnnotation[];
+  annotationsByFloor?: Record<number, ExportAnnotation[]>;
+  showGlobalAnnotations: boolean;
+  showFloorAnnotations: boolean;
   onHistoryChange?: (state: { canUndo: boolean; canRedo: boolean }) => void;
   onAnnotationsChange?: (annotations: ExportAnnotation[]) => void;
 }
@@ -36,6 +39,13 @@ function toLatLng(point: Point) {
 }
 
 const TILE_SIZE = 256;
+
+function toTibiaLevelLabel(floor: number) {
+  const delta = 7 - floor;
+  if (delta === 0) return "nível 0";
+  if (delta > 0) return `+${delta}`;
+  return `${delta}`;
+}
 
 function cloneAnnotations(annotations: Annotation[]) {
   return annotations.map((annotation) => JSON.parse(JSON.stringify(annotation)) as Annotation);
@@ -98,37 +108,48 @@ function buildEllipsePoints(a: Point, b: Point) {
   return points;
 }
 
-function makeLayer(annotation: Annotation) {
+function makeLayer(annotation: Annotation, sourceFloor: number, isCurrentFloor: boolean) {
   const pathOptions = {
     color: annotation.color,
     weight: annotation.type === "brush" ? 3 : 2,
-    opacity: 1,
-    interactive: false,
+    opacity: isCurrentFloor ? 1 : 0.78,
+    interactive: true,
     pane: PANE_NAME,
   };
+  const tooltip = `Marcação feita no andar arquivo ${sourceFloor} | Tibia ${toTibiaLevelLabel(sourceFloor)}`;
+
+  function withTooltip<T extends L.Layer>(layer: T) {
+    layer.bindTooltip(tooltip, {
+      direction: "top",
+      opacity: 0.95,
+      sticky: true,
+      className: "annotation-floor-tooltip",
+    });
+    return layer;
+  }
 
   if (annotation.type === "brush") {
-    return L.polyline(annotation.points.map(toLatLng), pathOptions);
+    return withTooltip(L.polyline(annotation.points.map(toLatLng), pathOptions));
   }
 
   if (annotation.type === "line") {
-    return L.polyline([toLatLng(annotation.a), toLatLng(annotation.b)], pathOptions);
+    return withTooltip(L.polyline([toLatLng(annotation.a), toLatLng(annotation.b)], pathOptions));
   }
 
   if (annotation.type === "arrow") {
-    return L.polyline(buildArrowPoints(annotation.a, annotation.b), pathOptions);
+    return withTooltip(L.polyline(buildArrowPoints(annotation.a, annotation.b), pathOptions));
   }
 
   if (annotation.type === "rect") {
-    return L.rectangle(getBounds(annotation.a, annotation.b), {
+    return withTooltip(L.rectangle(getBounds(annotation.a, annotation.b), {
       ...pathOptions,
       fill: false,
-    });
+    }));
   }
 
   if (annotation.type === "text") {
-    return L.marker(toLatLng(annotation.point), {
-      interactive: false,
+    return withTooltip(L.marker(toLatLng(annotation.point), {
+      interactive: true,
       pane: PANE_NAME,
       icon: L.divIcon({
         className: "annotation-text-icon",
@@ -136,13 +157,13 @@ function makeLayer(annotation: Annotation) {
         iconSize: [annotation.text.length * 10 + 24, 28],
         iconAnchor: [0, 14],
       }),
-    });
+    }));
   }
 
-  return L.polygon(buildEllipsePoints(annotation.a, annotation.b), {
+  return withTooltip(L.polygon(buildEllipsePoints(annotation.a, annotation.b), {
     ...pathOptions,
     fill: false,
-  });
+  }));
 }
 
 export function AnnotationCanvas({
@@ -157,6 +178,9 @@ export function AnnotationCanvas({
   clearNonce,
   annotationsRevision,
   initialAnnotations = [],
+  annotationsByFloor = {},
+  showGlobalAnnotations,
+  showFloorAnnotations,
   onHistoryChange,
   onAnnotationsChange,
 }: AnnotationCanvasProps) {
@@ -230,11 +254,58 @@ export function AnnotationCanvas({
   }
 
   function renderAnnotations() {
-    if (!layerGroupRef.current) return;
-    layerGroupRef.current.clearLayers();
-    annotationsRef.current.forEach((annotation) => {
-      layerGroupRef.current?.addLayer(makeLayer(annotation));
+    const transform = coordinateTransformRef.current;
+    if (!layerGroupRef.current || !transform) return;
+
+    const fromGamePoint = (point: { x: number; y: number }): Point => ({
+      lat: transform.maxY + TILE_SIZE - point.y,
+      lng: point.x - transform.minX,
     });
+
+    const fromExportAnnotation = (annotation: ExportAnnotation): Annotation => {
+      if (annotation.type === "brush") {
+        return {
+          type: annotation.type,
+          color: annotation.color,
+          points: annotation.points.map(fromGamePoint),
+        };
+      }
+
+      if (annotation.type === "text") {
+        return {
+          type: annotation.type,
+          color: annotation.color,
+          point: fromGamePoint(annotation.point),
+          text: annotation.text,
+        };
+      }
+
+      return {
+        type: annotation.type,
+        color: annotation.color,
+        a: fromGamePoint(annotation.a),
+        b: fromGamePoint(annotation.b),
+      };
+    };
+
+    layerGroupRef.current.clearLayers();
+
+    if (showGlobalAnnotations) {
+      Object.entries(annotationsByFloor).forEach(([sourceFloor, annotations]) => {
+        const numericFloor = Number(sourceFloor);
+        if (numericFloor === floor) return;
+
+        annotations.forEach((annotation) => {
+          layerGroupRef.current?.addLayer(makeLayer(fromExportAnnotation(annotation), numericFloor, false));
+        });
+      });
+    }
+
+    if (showFloorAnnotations) {
+      annotationsRef.current.forEach((annotation) => {
+        layerGroupRef.current?.addLayer(makeLayer(annotation, floor, true));
+      });
+    }
   }
 
   function replaceDraft(annotation: Annotation | null) {
@@ -270,7 +341,7 @@ export function AnnotationCanvas({
     }
 
     if (!annotation) return;
-    draftLayerRef.current = makeLayer(annotation);
+    draftLayerRef.current = makeLayer(annotation, floor, true);
     layerGroupRef.current.addLayer(draftLayerRef.current);
   }
 
@@ -291,16 +362,12 @@ export function AnnotationCanvas({
   }, [coordinateTransform]);
 
   useEffect(() => {
-    console.log("[annotation] andar selecionado:", floor);
-  }, [floor]);
-
-  useEffect(() => {
     if (!map) return;
 
     if (!map.getPane(PANE_NAME)) {
       const pane = map.createPane(PANE_NAME);
       pane.style.zIndex = "650";
-      pane.style.pointerEvents = "none";
+      pane.style.pointerEvents = "auto";
     }
 
     const group = L.layerGroup().addTo(map);
@@ -481,6 +548,10 @@ export function AnnotationCanvas({
     renderAnnotations();
     emitHistoryState();
   }, [floor, coordinateTransform, annotationsRevision]);
+
+  useEffect(() => {
+    renderAnnotations();
+  }, [annotationsByFloor, showGlobalAnnotations, showFloorAnnotations, coordinateTransform]);
 
   return null;
 }

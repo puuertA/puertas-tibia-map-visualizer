@@ -479,6 +479,21 @@ h3 {
     1px 1px 0 #0f172a;
 }
 
+.annotation-floor-tooltip {
+  background: rgba(15, 23, 42, 0.96);
+  border: 1px solid rgba(125, 211, 252, 0.45);
+  border-radius: 7px;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.38);
+  color: #e0f2fe;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 5px 8px;
+}
+
+.annotation-floor-tooltip::before {
+  border-top-color: rgba(125, 211, 252, 0.45);
+}
+
 .tutorial-kicker {
   color: #93c5fd;
   font-size: 0.78rem;
