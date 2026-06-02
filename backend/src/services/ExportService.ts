@@ -32,6 +32,7 @@ interface Bounds {
 const TILE_SIZE = 256;
 const TRANSPARENT_BLACK_THRESHOLD = 2;
 const MAX_EXPORT_PIXELS = Number(process.env.EXPORT_MAX_PIXELS ?? 8_000_000);
+const EXPORT_COMPOSITE_BATCH_SIZE = Number(process.env.EXPORT_COMPOSITE_BATCH_SIZE ?? 6);
 
 sharp.cache({ memory: 32, files: 0, items: 64 });
 sharp.concurrency(1);
@@ -223,6 +224,23 @@ async function prepareTileInput(input: string, options: { transparentBlack: bool
   return output;
 }
 
+async function compositeBatch(
+  currentFile: string,
+  overlays: sharp.OverlayOptions[],
+  tempDir: string,
+  step: number
+) {
+  if (overlays.length === 0) return currentFile;
+
+  const output = path.join(tempDir, `canvas_${step}.png`);
+  await sharp(currentFile)
+    .composite(overlays)
+    .png({ compressionLevel: 6 })
+    .toFile(output);
+
+  return output;
+}
+
 export class ExportService {
   static async exportFlattenedMap(options: ExportOptions = {}) {
     const floors = options.floor === undefined ? TileGeneratorService.getProcessedFloors() : [options.floor];
@@ -245,10 +263,31 @@ export class ExportService {
     const outputWidth = Math.max(1, Math.round(bounds.width * scale));
     const outputHeight = Math.max(1, Math.round(bounds.height * scale));
     const shouldMakeBlackTransparent = options.floor === undefined;
-    const composites: sharp.OverlayOptions[] = [];
     const tempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), "tibia-map-export-"));
 
     try {
+      let step = 0;
+      let currentFile = path.join(tempDir, `canvas_${step}.png`);
+      await sharp({
+        create: {
+          width: outputWidth,
+          height: outputHeight,
+          channels: 4,
+          background: { r: 0, g: 0, b: 0, alpha: 0 },
+        },
+      })
+        .png({ compressionLevel: 6 })
+        .toFile(currentFile);
+
+      let batch: sharp.OverlayOptions[] = [];
+
+      async function flushBatch() {
+        if (batch.length === 0) return;
+        step += 1;
+        currentFile = await compositeBatch(currentFile, batch, tempDir, step);
+        batch = [];
+      }
+
       for (const floor of orderedFloors) {
         const tiles = tilesByFloor.get(floor) ?? [];
         for (const tile of tiles) {
@@ -261,28 +300,24 @@ export class ExportService {
             tempDir,
           });
 
-          composites.push({
+          batch.push({
             input: preparedInput,
             left: Math.round((tile.baseX - bounds.minX) * scale),
             top: Math.round((tile.baseY - bounds.minY) * scale),
           });
+
+          if (batch.length >= EXPORT_COMPOSITE_BATCH_SIZE) {
+            await flushBatch();
+          }
         }
       }
 
-      const annotationSvg = renderAnnotationSvg(options.annotations ?? [], tilesByFloor, bounds, scale);
-      composites.push({ input: annotationSvg, left: 0, top: 0 });
+      await flushBatch();
 
-      return await sharp({
-        create: {
-          width: outputWidth,
-          height: outputHeight,
-          channels: 4,
-          background: { r: 0, g: 0, b: 0, alpha: 0 },
-        },
-      })
-        .composite(composites)
-        .png({ compressionLevel: 9 })
-        .toBuffer();
+      const annotationSvg = renderAnnotationSvg(options.annotations ?? [], tilesByFloor, bounds, scale);
+      currentFile = await compositeBatch(currentFile, [{ input: annotationSvg, left: 0, top: 0 }], tempDir, step + 1);
+
+      return await fs.promises.readFile(currentFile);
     } finally {
       await fs.promises.rm(tempDir, { recursive: true, force: true });
     }
