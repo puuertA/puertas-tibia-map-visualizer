@@ -334,7 +334,7 @@ export function AnnotationCanvas({
       } else if (selectedToolRef.current === "rect") {
         draftAnnotationRef.current = { type: "rect", color, a: start, b: start };
       } else if (selectedToolRef.current === "text") {
-        const text = window.prompt("Digite o texto da marcacao:");
+        const text = window.prompt("Digite o texto da marcação:");
         if (!text?.trim()) {
           undoStackRef.current.pop();
           startPointRef.current = null;

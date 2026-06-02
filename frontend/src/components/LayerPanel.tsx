@@ -9,11 +9,11 @@ export function LayerPanel({ showPlaceLabels, onShowPlaceLabelsChange }: LayerPa
       <h3>Camadas</h3>
       <label className="toggle-line">
         <input type="checkbox" defaultChecked />
-        <span>Mostrar marcacoes globais</span>
+        <span>Mostrar marcações globais</span>
       </label>
       <label className="toggle-line">
         <input type="checkbox" defaultChecked />
-        <span>Mostrar marcacoes do andar</span>
+        <span>Mostrar marcações do andar</span>
       </label>
       <label className="toggle-line">
         <input

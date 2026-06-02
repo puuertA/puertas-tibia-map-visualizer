@@ -43,7 +43,7 @@ interface PixelOverlayGeometry {
 
 function toTibiaLevelLabel(floor: number) {
   const delta = 7 - floor;
-  if (delta === 0) return "nivel 0";
+  if (delta === 0) return "nível 0";
   if (delta > 0) return `+${delta}`;
   return `${delta}`;
 }
@@ -257,7 +257,7 @@ export function MapViewer({
       if (event.key === "Delete" || event.key === "Backspace") {
         if (!drawingEnabledRef.current) return;
         event.preventDefault();
-        if (window.confirm("Limpar todas as marcacoes deste andar?")) {
+        if (window.confirm("Limpar todas as marcações deste andar?")) {
           setClearNonce((n) => n + 1);
         }
         return;

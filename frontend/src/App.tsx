@@ -7,6 +7,15 @@ import { Sidebar } from "./components/Sidebar";
 import { api } from "./services/api";
 import { ExportAnnotation } from "./types/ExportAnnotation";
 
+type ToastType = "success" | "error" | "info";
+
+interface ToastMessage {
+  id: number;
+  type: ToastType;
+  title: string;
+  description?: string;
+}
+
 function App() {
   const [selectedFloor, setSelectedFloor] = useState(7);
   const [status, setStatus] = useState<{ originalFiles: number; importedFiles: number; floors: number[] } | null>(null);
@@ -15,11 +24,20 @@ function App() {
   const [annotationsRevision, setAnnotationsRevision] = useState(0);
   const [showPlaceLabels, setShowPlaceLabels] = useState(false);
   const [tutorialOpen, setTutorialOpen] = useState(false);
+  const [toasts, setToasts] = useState<ToastMessage[]>([]);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     void loadStatus();
   }, []);
+
+  function notify(type: ToastType, title: string, description?: string) {
+    const id = Date.now() + Math.random();
+    setToasts((current) => [...current, { id, type, title, description }]);
+    window.setTimeout(() => {
+      setToasts((current) => current.filter((toast) => toast.id !== id));
+    }, 4200);
+  }
 
   async function loadStatus() {
     try {
@@ -27,6 +45,7 @@ function App() {
       setStatus(response.data);
     } catch (error) {
       console.error("Erro ao carregar status:", error);
+      notify("error", "Não foi possível carregar o status", "Verifique se o backend está online.");
     }
   }
 
@@ -35,8 +54,10 @@ function App() {
       setRefreshing(true);
       await api.post("/maps/refresh");
       await loadStatus();
+      notify("success", "Recursos atualizados", "Mapas e tiles foram recarregados.");
     } catch (error) {
       console.error("Erro ao atualizar recursos:", error);
+      notify("error", "Erro ao atualizar recursos", "Confira o backend e tente novamente.");
     } finally {
       setRefreshing(false);
     }
@@ -56,6 +77,7 @@ function App() {
     link.download = "marcacoes_tibia_map.json";
     link.click();
     URL.revokeObjectURL(url);
+    notify("success", "Marcações salvas", "O arquivo JSON foi baixado.");
   }
 
   async function handleLoadAnnotations(event: ChangeEvent<HTMLInputElement>) {
@@ -70,7 +92,7 @@ function App() {
       };
 
       if (!parsed.annotationsByFloor || typeof parsed.annotationsByFloor !== "object") {
-        throw new Error("Arquivo sem marcacoes validas");
+        throw new Error("Arquivo sem marcações válidas");
       }
 
       const nextAnnotations = Object.fromEntries(
@@ -82,10 +104,10 @@ function App() {
 
       setAnnotationsByFloor(nextAnnotations);
       setAnnotationsRevision((revision) => revision + 1);
-      alert("Marcacoes carregadas com sucesso.");
+      notify("success", "Marcações carregadas", "Seu arquivo JSON foi aplicado ao mapa.");
     } catch (error) {
-      console.error("Erro ao carregar marcacoes:", error);
-      alert("Nao foi possivel carregar esse arquivo de marcacoes.");
+      console.error("Erro ao carregar marcações:", error);
+      notify("error", "Não foi possível carregar", "Esse arquivo não parece ter marcações válidas.");
     }
   }
 
@@ -116,7 +138,7 @@ function App() {
           onShowPlaceLabelsChange={setShowPlaceLabels}
         />
         <section className="panel" data-tour="annotations">
-          <h3>Marcacoes</h3>
+          <h3>Marcações</h3>
           <div className="toolbar-grid">
             <button type="button" className="tool-button" onClick={handleSaveAnnotations}>
               Salvar
@@ -132,11 +154,12 @@ function App() {
             accept="application/json,.json"
             onChange={handleLoadAnnotations}
           />
-          <p className="hint-text">Salva e carrega seus desenhos e marcacoes em JSON.</p>
+          <p className="hint-text">Salva e carrega seus desenhos e marcações em JSON.</p>
         </section>
         <ExportPanel
           floor={selectedFloor}
           annotations={Object.values(annotationsByFloor).flat()}
+          onNotify={notify}
         />
         <section className="panel">
           <button type="button" className="tool-button full-width-button" onClick={() => setTutorialOpen(true)}>
@@ -163,6 +186,44 @@ function App() {
         />
       </main>
       {tutorialOpen && <TutorialOverlay onClose={() => setTutorialOpen(false)} />}
+      <ToastViewport
+        toasts={toasts}
+        onDismiss={(id) => setToasts((current) => current.filter((toast) => toast.id !== id))}
+      />
+    </div>
+  );
+}
+
+function ToastViewport({
+  toasts,
+  onDismiss,
+}: {
+  toasts: ToastMessage[];
+  onDismiss: (id: number) => void;
+}) {
+  if (toasts.length === 0) return null;
+
+  return (
+    <div className="toast-viewport" aria-live="polite" aria-atomic="true">
+      {toasts.map((toast) => (
+        <div key={toast.id} className={`toast toast-${toast.type}`}>
+          <div className="toast-icon" aria-hidden>
+            {toast.type === "success" ? "✓" : toast.type === "error" ? "!" : "i"}
+          </div>
+          <div className="toast-content">
+            <strong>{toast.title}</strong>
+            {toast.description && <span>{toast.description}</span>}
+          </div>
+          <button
+            type="button"
+            className="toast-close"
+            onClick={() => onDismiss(toast.id)}
+            aria-label="Fechar notificação"
+          >
+            ×
+          </button>
+        </div>
+      ))}
     </div>
   );
 }
@@ -178,42 +239,42 @@ function TutorialOverlay({ onClose }: { onClose: () => void }) {
   const steps = [
     {
       title: "Bem-vindo ao mapa",
-      text: "Aqui voce navega pelo mapa do Tibia, troca andares, inspeciona pixels e desenha marcacoes diretamente sobre o mapa.",
+      text: "Aqui você navega pelo mapa do Tibia, troca andares, inspeciona pixels e desenha marcações diretamente sobre o mapa.",
       highlight: "map",
     },
     {
       title: "Andares",
-      text: "Use o seletor de andar na lateral para alternar entre superficie, andares superiores e subsolos. O andar arquivo 7 representa o nivel 0 do Tibia.",
+      text: "Use o seletor de andar na lateral para alternar entre superfície, andares superiores e subsolos. O andar arquivo 7 representa o nível 0 do Tibia.",
       highlight: "floors",
     },
     {
       title: "Mira e pixels",
-      text: "A mira mostra o pixel selecionado e as coordenadas X, Y e Z. Passe o mouse para ver a borda azul e clique para fixar a selecao.",
+      text: "A mira mostra o pixel selecionado e as coordenadas X, Y e Z. Passe o mouse para ver a borda azul e clique para fixar a seleção.",
       highlight: "map",
     },
     {
       title: "Desenho",
-      text: "Na barra de ferramentas voce escolhe mover mapa, desenho livre, linha, seta, retangulo, circulo ou texto. A rodinha do mouse continua dando zoom mesmo com ferramenta ativa.",
+      text: "Na barra de ferramentas você escolhe mover mapa, desenho livre, linha, seta, retângulo, círculo ou texto. A rodinha do mouse continua dando zoom mesmo com ferramenta ativa.",
       highlight: "drawing",
     },
     {
       title: "Atalhos",
-      text: "Use Ctrl+Z para desfazer, Ctrl+Y ou Ctrl+Shift+Z para refazer. Ferramentas: V mover, B pincel, L linha, A seta, R retangulo, C circulo e T texto.",
+      text: "Use Ctrl+Z para desfazer, Ctrl+Y ou Ctrl+Shift+Z para refazer. Ferramentas: V mover, B pincel, L linha, A seta, R retângulo, C círculo e T texto.",
       highlight: "drawing",
     },
     {
       title: "Camadas",
-      text: "A camada de nomes dos lugares fica desligada por padrao. Ligue quando quiser contexto e desligue quando quiser o mapa limpo.",
+      text: "A camada de nomes dos lugares fica desligada por padrão. Ligue quando quiser contexto e desligue quando quiser o mapa limpo.",
       highlight: "layers",
     },
     {
       title: "Salvar e carregar",
-      text: "Use Salvar para baixar suas marcacoes em JSON. Use Carregar para restaurar esse arquivo depois, inclusive em outra sessao.",
+      text: "Use Salvar para baixar suas marcações em JSON. Use Carregar para restaurar esse arquivo depois, inclusive em outra sessão.",
       highlight: "annotations",
     },
     {
-      title: "Exportacao",
-      text: "Exporte o andar atual, o mapa limpo da superficie ou o mapa com 16 andares chapados. Os desenhos entram junto na imagem exportada.",
+      title: "Exportação",
+      text: "Exporte o andar atual, o mapa limpo da superfície ou o mapa com 16 andares chapados. Os desenhos entram junto na imagem exportada.",
       highlight: "export",
     },
   ];
@@ -288,7 +349,7 @@ function TutorialOverlay({ onClose }: { onClose: () => void }) {
             className="primary-button tutorial-next"
             onClick={() => (isLast ? onClose() : setStep((currentStep) => currentStep + 1))}
           >
-            {isLast ? "Concluir" : "Proximo"}
+            {isLast ? "Concluir" : "Próximo"}
           </button>
         </div>
       </div>

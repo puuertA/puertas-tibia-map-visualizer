@@ -8,7 +8,7 @@ interface FloorSelectorProps {
 
 function toTibiaLevelLabel(floor: number) {
   const delta = 7 - floor;
-  if (delta === 0) return "nivel 0";
+  if (delta === 0) return "nível 0";
   if (delta > 0) return `+${delta}`;
   return `${delta}`;
 }
@@ -61,7 +61,7 @@ export function FloorSelector({ floor = 7, onFloorChange }: FloorSelectorProps) 
     return (
       <section className="panel" data-tour="floors">
         <h3>Andar</h3>
-        <p style={{ color: "#ff6b6b" }}>Nenhum andar disponivel</p>
+        <p style={{ color: "#ff6b6b" }}>Nenhum andar disponível</p>
       </section>
     );
   }

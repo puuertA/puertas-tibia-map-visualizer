@@ -18,8 +18,8 @@ const tools: Array<{ id: DrawingTool; label: string; shortcut: string }> = [
   { id: "brush", label: "Desenho livre", shortcut: "B" },
   { id: "line", label: "Linha", shortcut: "L" },
   { id: "arrow", label: "Seta", shortcut: "A" },
-  { id: "rect", label: "Retangulo", shortcut: "R" },
-  { id: "circle", label: "Circulo", shortcut: "C" },
+  { id: "rect", label: "Retângulo", shortcut: "R" },
+  { id: "circle", label: "Círculo", shortcut: "C" },
   { id: "text", label: "Texto", shortcut: "T" },
 ];
 
@@ -157,7 +157,7 @@ export function DrawingToolbar({
           />
         </label>
 
-        <div className="drawing-tool-strip" role="toolbar" aria-label="Historico">
+        <div className="drawing-tool-strip" role="toolbar" aria-label="Histórico">
           <button
             type="button"
             className="icon-tool-button"
