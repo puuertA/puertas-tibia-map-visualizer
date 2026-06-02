@@ -9,3 +9,5 @@ services:
     envVars:
       - key: FRONTEND_ORIGIN
         value: https://puertas-tibia-map-visualizer.netlify.app
+      - key: EXPORT_MAX_PIXELS
+        value: "8000000"

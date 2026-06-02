@@ -1,4 +1,5 @@
 import fs from "fs";
+import os from "os";
 import path from "path";
 import sharp from "sharp";
 import { TileGeneratorService, TileMetadata } from "./TileGeneratorService";
@@ -30,6 +31,10 @@ interface Bounds {
 
 const TILE_SIZE = 256;
 const TRANSPARENT_BLACK_THRESHOLD = 2;
+const MAX_EXPORT_PIXELS = Number(process.env.EXPORT_MAX_PIXELS ?? 8_000_000);
+
+sharp.cache({ memory: 32, files: 0, items: 64 });
+sharp.concurrency(1);
 
 function getLayerOrder(floors: number[]) {
   // Tibia: z maior fica mais fundo. Renderiza fundo primeiro e andares superiores por cima.
@@ -38,37 +43,6 @@ function getLayerOrder(floors: number[]) {
 
 function getTilePath(tile: TileMetadata) {
   return path.join(getTilesDir(), `floor_${tile.floor}`, `tile_${tile.baseX}_${tile.baseY}.png`);
-}
-
-async function makeBlackTransparent(input: string) {
-  const { data, info } = await sharp(input)
-    .ensureAlpha()
-    .raw()
-    .toBuffer({ resolveWithObject: true });
-
-  for (let index = 0; index < data.length; index += info.channels) {
-    const red = data[index];
-    const green = data[index + 1];
-    const blue = data[index + 2];
-
-    if (
-      red <= TRANSPARENT_BLACK_THRESHOLD &&
-      green <= TRANSPARENT_BLACK_THRESHOLD &&
-      blue <= TRANSPARENT_BLACK_THRESHOLD
-    ) {
-      data[index + 3] = 0;
-    }
-  }
-
-  return sharp(data, {
-    raw: {
-      width: info.width,
-      height: info.height,
-      channels: info.channels,
-    },
-  })
-    .png()
-    .toBuffer();
 }
 
 function calculateBounds(tiles: TileMetadata[]): Bounds {
@@ -98,6 +72,13 @@ function annotationPointToPixel(point: Point, bounds: Bounds) {
   };
 }
 
+function scalePoint(point: { x: number; y: number }, scale: number) {
+  return {
+    x: point.x * scale,
+    y: point.y * scale,
+  };
+}
+
 function buildArrowPolyline(a: { x: number; y: number }, b: { x: number; y: number }) {
   const dx = b.x - a.x;
   const dy = b.y - a.y;
@@ -123,9 +104,12 @@ function buildArrowPolyline(a: { x: number; y: number }, b: { x: number; y: numb
 function renderAnnotationSvg(
   annotations: ExportAnnotation[],
   tilesByFloor: Map<number, TileMetadata[]>,
-  bounds: Bounds
+  bounds: Bounds,
+  scale: number
 ) {
   const elements: string[] = [];
+  const width = Math.max(1, Math.round(bounds.width * scale));
+  const height = Math.max(1, Math.round(bounds.height * scale));
 
   for (const annotation of annotations) {
     const floorTiles = tilesByFloor.get(annotation.floor);
@@ -137,48 +121,106 @@ function renderAnnotationSvg(
     if (annotation.type === "brush") {
       const points = annotation.points
         .map((point) => annotationPointToPixel(point, bounds))
+        .map((point) => scalePoint(point, scale))
         .map((point) => `${point.x.toFixed(2)},${point.y.toFixed(2)}`)
         .join(" ");
       elements.push(
-        `<polyline points="${points}" fill="none" stroke="${color}" stroke-width="${strokeWidth}" stroke-linecap="round" stroke-linejoin="round"/>`
+        `<polyline points="${points}" fill="none" stroke="${color}" stroke-width="${Math.max(1, strokeWidth * scale)}" stroke-linecap="round" stroke-linejoin="round"/>`
       );
       continue;
     }
 
     if (annotation.type === "text") {
-      const point = annotationPointToPixel(annotation.point, bounds);
+      const point = scalePoint(annotationPointToPixel(annotation.point, bounds), scale);
       elements.push(
-        `<text x="${point.x}" y="${point.y}" fill="${color}" font-size="18" font-family="Arial, sans-serif" font-weight="700" stroke="#0f172a" stroke-width="3" paint-order="stroke" dominant-baseline="middle">${escapeAttr(annotation.text)}</text>`
+        `<text x="${point.x}" y="${point.y}" fill="${color}" font-size="${Math.max(10, 18 * scale)}" font-family="Arial, sans-serif" font-weight="700" stroke="#0f172a" stroke-width="${Math.max(1, 3 * scale)}" paint-order="stroke" dominant-baseline="middle">${escapeAttr(annotation.text)}</text>`
       );
       continue;
     }
 
-    const a = annotationPointToPixel(annotation.a, bounds);
-    const b = annotationPointToPixel(annotation.b, bounds);
+    const a = scalePoint(annotationPointToPixel(annotation.a, bounds), scale);
+    const b = scalePoint(annotationPointToPixel(annotation.b, bounds), scale);
 
     if (annotation.type === "line") {
       elements.push(
-        `<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="${color}" stroke-width="${strokeWidth}" stroke-linecap="round"/>`
+        `<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="${color}" stroke-width="${Math.max(1, strokeWidth * scale)}" stroke-linecap="round"/>`
       );
     } else if (annotation.type === "arrow") {
       const points = buildArrowPolyline(a, b).map((point) => `${point.x.toFixed(2)},${point.y.toFixed(2)}`).join(" ");
       elements.push(
-        `<polyline points="${points}" fill="none" stroke="${color}" stroke-width="${strokeWidth}" stroke-linecap="round" stroke-linejoin="round"/>`
+        `<polyline points="${points}" fill="none" stroke="${color}" stroke-width="${Math.max(1, strokeWidth * scale)}" stroke-linecap="round" stroke-linejoin="round"/>`
       );
     } else if (annotation.type === "rect") {
       elements.push(
-        `<rect x="${Math.min(a.x, b.x)}" y="${Math.min(a.y, b.y)}" width="${Math.abs(b.x - a.x)}" height="${Math.abs(b.y - a.y)}" fill="none" stroke="${color}" stroke-width="${strokeWidth}"/>`
+        `<rect x="${Math.min(a.x, b.x)}" y="${Math.min(a.y, b.y)}" width="${Math.abs(b.x - a.x)}" height="${Math.abs(b.y - a.y)}" fill="none" stroke="${color}" stroke-width="${Math.max(1, strokeWidth * scale)}"/>`
       );
     } else if (annotation.type === "circle") {
       elements.push(
-        `<ellipse cx="${(a.x + b.x) / 2}" cy="${(a.y + b.y) / 2}" rx="${Math.abs(b.x - a.x) / 2}" ry="${Math.abs(b.y - a.y) / 2}" fill="none" stroke="${color}" stroke-width="${strokeWidth}"/>`
+        `<ellipse cx="${(a.x + b.x) / 2}" cy="${(a.y + b.y) / 2}" rx="${Math.abs(b.x - a.x) / 2}" ry="${Math.abs(b.y - a.y) / 2}" fill="none" stroke="${color}" stroke-width="${Math.max(1, strokeWidth * scale)}"/>`
       );
     }
   }
 
   return Buffer.from(
-    `<svg width="${bounds.width}" height="${bounds.height}" viewBox="0 0 ${bounds.width} ${bounds.height}" xmlns="http://www.w3.org/2000/svg">${elements.join("")}</svg>`
+    `<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg">${elements.join("")}</svg>`
   );
+}
+
+function getExportScale(bounds: Bounds) {
+  const totalPixels = bounds.width * bounds.height;
+  if (totalPixels <= MAX_EXPORT_PIXELS) return 1;
+  return Math.sqrt(MAX_EXPORT_PIXELS / totalPixels);
+}
+
+async function prepareTileInput(input: string, options: { transparentBlack: boolean; scale: number; tempDir: string }) {
+  if (!options.transparentBlack && options.scale === 1) {
+    return input;
+  }
+
+  const output = path.join(options.tempDir, `${path.basename(input, ".png")}_${Date.now()}_${Math.random().toString(16).slice(2)}.png`);
+  let pipeline: sharp.Sharp;
+
+  if (options.transparentBlack) {
+    const { data, info } = await sharp(input)
+      .ensureAlpha()
+      .raw()
+      .toBuffer({ resolveWithObject: true });
+
+    for (let index = 0; index < data.length; index += info.channels) {
+      const red = data[index];
+      const green = data[index + 1];
+      const blue = data[index + 2];
+
+      if (
+        red <= TRANSPARENT_BLACK_THRESHOLD &&
+        green <= TRANSPARENT_BLACK_THRESHOLD &&
+        blue <= TRANSPARENT_BLACK_THRESHOLD
+      ) {
+        data[index + 3] = 0;
+      }
+    }
+
+    pipeline = sharp(data, {
+      raw: {
+        width: info.width,
+        height: info.height,
+        channels: info.channels,
+      },
+    });
+  } else {
+    pipeline = sharp(input);
+  }
+
+  if (options.scale !== 1) {
+    pipeline = pipeline.resize({
+      width: Math.max(1, Math.round(TILE_SIZE * options.scale)),
+      height: Math.max(1, Math.round(TILE_SIZE * options.scale)),
+      fit: "fill",
+    });
+  }
+
+  await pipeline.png({ compressionLevel: 9 }).toFile(output);
+  return output;
 }
 
 export class ExportService {
@@ -199,42 +241,50 @@ export class ExportService {
     }
 
     const bounds = calculateBounds(allTiles);
+    const scale = getExportScale(bounds);
+    const outputWidth = Math.max(1, Math.round(bounds.width * scale));
+    const outputHeight = Math.max(1, Math.round(bounds.height * scale));
+    const shouldMakeBlackTransparent = options.floor === undefined;
     const composites: sharp.OverlayOptions[] = [];
-    const transparentTileCache = new Map<string, Buffer>();
+    const tempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), "tibia-map-export-"));
 
-    for (const floor of orderedFloors) {
-      const tiles = tilesByFloor.get(floor) ?? [];
-      for (const tile of tiles) {
-        const input = getTilePath(tile);
-        if (!fs.existsSync(input)) continue;
+    try {
+      for (const floor of orderedFloors) {
+        const tiles = tilesByFloor.get(floor) ?? [];
+        for (const tile of tiles) {
+          const input = getTilePath(tile);
+          if (!fs.existsSync(input)) continue;
 
-        let transparentTile = transparentTileCache.get(input);
-        if (!transparentTile) {
-          transparentTile = await makeBlackTransparent(input);
-          transparentTileCache.set(input, transparentTile);
+          const preparedInput = await prepareTileInput(input, {
+            transparentBlack: shouldMakeBlackTransparent,
+            scale,
+            tempDir,
+          });
+
+          composites.push({
+            input: preparedInput,
+            left: Math.round((tile.baseX - bounds.minX) * scale),
+            top: Math.round((tile.baseY - bounds.minY) * scale),
+          });
         }
-
-        composites.push({
-          input: transparentTile,
-          left: tile.baseX - bounds.minX,
-          top: tile.baseY - bounds.minY,
-        });
       }
+
+      const annotationSvg = renderAnnotationSvg(options.annotations ?? [], tilesByFloor, bounds, scale);
+      composites.push({ input: annotationSvg, left: 0, top: 0 });
+
+      return sharp({
+        create: {
+          width: outputWidth,
+          height: outputHeight,
+          channels: 4,
+          background: { r: 0, g: 0, b: 0, alpha: 0 },
+        },
+      })
+        .composite(composites)
+        .png({ compressionLevel: 9 })
+        .toBuffer();
+    } finally {
+      await fs.promises.rm(tempDir, { recursive: true, force: true });
     }
-
-    const annotationSvg = renderAnnotationSvg(options.annotations ?? [], tilesByFloor, bounds);
-    composites.push({ input: annotationSvg, left: 0, top: 0 });
-
-    return sharp({
-      create: {
-        width: bounds.width,
-        height: bounds.height,
-        channels: 4,
-        background: { r: 0, g: 0, b: 0, alpha: 0 },
-      },
-    })
-      .composite(composites)
-      .png()
-      .toBuffer();
   }
 }
