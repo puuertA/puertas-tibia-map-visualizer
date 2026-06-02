@@ -1,0 +1,40 @@
+[
+  {
+    "type": "arrow",
+    "floor": 7,
+    "points": [
+      {
+        "x": 100,
+        "y": 100
+      },
+      {
+        "x": 200,
+        "y": 150
+      }
+    ],
+    "color": "#ff0000",
+    "strokeWidth": 2,
+    "id": "8806b7b4-84cd-4edb-bab8-32a1cfbc7848",
+    "createdAt": "2026-06-01T21:34:54.369Z",
+    "updatedAt": "2026-06-01T21:34:54.369Z"
+  },
+  {
+    "type": "arrow",
+    "floor": 7,
+    "points": [
+      {
+        "x": 100,
+        "y": 100
+      },
+      {
+        "x": 200,
+        "y": 150
+      }
+    ],
+    "color": "#ff0000",
+    "strokeWidth": 2,
+    "id": "e528e5d7-ac50-47c3-9965-f00464f07a1a",
+    "createdAt": "2026-06-01T21:35:06.783Z",
+    "updatedAt": "2026-06-01T21:35:06.783Z"
+  }
+]

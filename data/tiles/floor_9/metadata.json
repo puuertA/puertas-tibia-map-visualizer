@@ -1,0 +1,602 @@
+[
+  {
+    "id": "880ce49b-52ac-4812-a6a1-2c76b8a096ed",
+    "floor": 9,
+    "baseX": 31744,
+    "baseY": 30976,
+    "filename": "Minimap_Color_31744_30976_9.png",
+    "imported": true
+  },
+  {
+    "id": "486ffeb2-9dde-40ee-a8e1-251d19ba59c2",
+    "floor": 9,
+    "baseX": 31744,
+    "baseY": 31232,
+    "filename": "Minimap_Color_31744_31232_9.png",
+    "imported": true
+  },
+  {
+    "id": "d274d4af-f91c-413c-ade8-cf15a528bf10",
+    "floor": 9,
+    "baseX": 31744,
+    "baseY": 31488,
+    "filename": "Minimap_Color_31744_31488_9.png",
+    "imported": true
+  },
+  {
+    "id": "9a7ea996-819d-4d3b-894e-115f92092cfd",
+    "floor": 9,
+    "baseX": 31744,
+    "baseY": 31744,
+    "filename": "Minimap_Color_31744_31744_9.png",
+    "imported": true
+  },
+  {
+    "id": "7a663779-12b2-4c36-932d-89a75acd8c1e",
+    "floor": 9,
+    "baseX": 31744,
+    "baseY": 32000,
+    "filename": "Minimap_Color_31744_32000_9.png",
+    "imported": true
+  },
+  {
+    "id": "6d1c4386-5d27-4a07-9eda-6fa51f828955",
+    "floor": 9,
+    "baseX": 31744,
+    "baseY": 32256,
+    "filename": "Minimap_Color_31744_32256_9.png",
+    "imported": true
+  },
+  {
+    "id": "4b7039df-9a69-4d65-b77e-8ed74e067808",
+    "floor": 9,
+    "baseX": 31744,
+    "baseY": 32512,
+    "filename": "Minimap_Color_31744_32512_9.png",
+    "imported": true
+  },
+  {
+    "id": "53f4fb9b-cb38-42a3-a59a-0d13ccbe0ace",
+    "floor": 9,
+    "baseX": 31744,
+    "baseY": 32768,
+    "filename": "Minimap_Color_31744_32768_9.png",
+    "imported": true
+  },
+  {
+    "id": "492a8217-ccea-42f5-bb18-fb11b71e5602",
+    "floor": 9,
+    "baseX": 32000,
+    "baseY": 30976,
+    "filename": "Minimap_Color_32000_30976_9.png",
+    "imported": true
+  },
+  {
+    "id": "5d385f88-0052-4b5a-bbad-f3dd7450907b",
+    "floor": 9,
+    "baseX": 32000,
+    "baseY": 31232,
+    "filename": "Minimap_Color_32000_31232_9.png",
+    "imported": true
+  },
+  {
+    "id": "a14deaf9-c9da-41b2-ba41-82ad8c83ffa2",
+    "floor": 9,
+    "baseX": 32000,
+    "baseY": 31488,
+    "filename": "Minimap_Color_32000_31488_9.png",
+    "imported": true
+  },
+  {
+    "id": "3d1a31c9-cda8-469c-b7e5-75338ffba36b",
+    "floor": 9,
+    "baseX": 32000,
+    "baseY": 31744,
+    "filename": "Minimap_Color_32000_31744_9.png",
+    "imported": true
+  },
+  {
+    "id": "32575400-7b3a-4969-aa1d-f0e96e3d210e",
+    "floor": 9,
+    "baseX": 32000,
+    "baseY": 32000,
+    "filename": "Minimap_Color_32000_32000_9.png",
+    "imported": true
+  },
+  {
+    "id": "d828fbd0-e28f-437d-9cd5-23792fafba60",
+    "floor": 9,
+    "baseX": 32000,
+    "baseY": 32256,
+    "filename": "Minimap_Color_32000_32256_9.png",
+    "imported": true
+  },
+  {
+    "id": "33fc3f39-f59b-45cc-b55b-82f53eff4770",
+    "floor": 9,
+    "baseX": 32000,
+    "baseY": 32512,
+    "filename": "Minimap_Color_32000_32512_9.png",
+    "imported": true
+  },
+  {
+    "id": "e72879d5-f1a9-4c1d-8d06-1a12538f2689",
+    "floor": 9,
+    "baseX": 32000,
+    "baseY": 32768,
+    "filename": "Minimap_Color_32000_32768_9.png",
+    "imported": true
+  },
+  {
+    "id": "f4f88bba-4901-476e-81c6-2b3bcb901df3",
+    "floor": 9,
+    "baseX": 32256,
+    "baseY": 30976,
+    "filename": "Minimap_Color_32256_30976_9.png",
+    "imported": true
+  },
+  {
+    "id": "b6d7dde2-063c-4d3d-abca-22f63adc18c3",
+    "floor": 9,
+    "baseX": 32256,
+    "baseY": 31232,
+    "filename": "Minimap_Color_32256_31232_9.png",
+    "imported": true
+  },
+  {
+    "id": "8ad35fce-80a0-4357-8b20-7344943c3b4a",
+    "floor": 9,
+    "baseX": 32256,
+    "baseY": 31488,
+    "filename": "Minimap_Color_32256_31488_9.png",
+    "imported": true
+  },
+  {
+    "id": "f5f2223f-5583-49de-82b5-fbc6a2884845",
+    "floor": 9,
+    "baseX": 32256,
+    "baseY": 31744,
+    "filename": "Minimap_Color_32256_31744_9.png",
+    "imported": true
+  },
+  {
+    "id": "bcaae087-b643-4173-bdc3-49535abaca71",
+    "floor": 9,
+    "baseX": 32256,
+    "baseY": 32000,
+    "filename": "Minimap_Color_32256_32000_9.png",
+    "imported": true
+  },
+  {
+    "id": "e754f3b5-b41f-4747-81bb-97eeb39e5516",
+    "floor": 9,
+    "baseX": 32256,
+    "baseY": 32256,
+    "filename": "Minimap_Color_32256_32256_9.png",
+    "imported": true
+  },
+  {
+    "id": "5f3d2269-35e2-469a-9e4c-5bf0c25cfe7a",
+    "floor": 9,
+    "baseX": 32256,
+    "baseY": 32512,
+    "filename": "Minimap_Color_32256_32512_9.png",
+    "imported": true
+  },
+  {
+    "id": "cea395c6-009d-4230-81a8-f336d90ba645",
+    "floor": 9,
+    "baseX": 32256,
+    "baseY": 32768,
+    "filename": "Minimap_Color_32256_32768_9.png",
+    "imported": true
+  },
+  {
+    "id": "27306179-7d0a-46ca-8eb1-d84c0953623a",
+    "floor": 9,
+    "baseX": 32512,
+    "baseY": 30976,
+    "filename": "Minimap_Color_32512_30976_9.png",
+    "imported": true
+  },
+  {
+    "id": "fa45b16d-b1c4-497a-bba8-a7a4c7b4bf35",
+    "floor": 9,
+    "baseX": 32512,
+    "baseY": 31232,
+    "filename": "Minimap_Color_32512_31232_9.png",
+    "imported": true
+  },
+  {
+    "id": "3e79eba5-58d3-4303-a7b5-17b2221b3677",
+    "floor": 9,
+    "baseX": 32512,
+    "baseY": 31488,
+    "filename": "Minimap_Color_32512_31488_9.png",
+    "imported": true
+  },
+  {
+    "id": "e812c5e3-55bb-436d-8077-2aca3aadf121",
+    "floor": 9,
+    "baseX": 32512,
+    "baseY": 31744,
+    "filename": "Minimap_Color_32512_31744_9.png",
+    "imported": true
+  },
+  {
+    "id": "082d563d-a7a6-44e9-bb78-a455349d6b7e",
+    "floor": 9,
+    "baseX": 32512,
+    "baseY": 32000,
+    "filename": "Minimap_Color_32512_32000_9.png",
+    "imported": true
+  },
+  {
+    "id": "5e183d6b-6c27-4e58-8578-14df7ad41a52",
+    "floor": 9,
+    "baseX": 32512,
+    "baseY": 32256,
+    "filename": "Minimap_Color_32512_32256_9.png",
+    "imported": true
+  },
+  {
+    "id": "af08c7e0-9442-4926-86a7-34ab5d3fad33",
+    "floor": 9,
+    "baseX": 32512,
+    "baseY": 32512,
+    "filename": "Minimap_Color_32512_32512_9.png",
+    "imported": true
+  },
+  {
+    "id": "651e6912-e9a4-42ec-98d7-8d0fdc04ecc9",
+    "floor": 9,
+    "baseX": 32512,
+    "baseY": 32768,
+    "filename": "Minimap_Color_32512_32768_9.png",
+    "imported": true
+  },
+  {
+    "id": "b7f724b3-317e-49c3-8518-366c138d373e",
+    "floor": 9,
+    "baseX": 32768,
+    "baseY": 30976,
+    "filename": "Minimap_Color_32768_30976_9.png",
+    "imported": true
+  },
+  {
+    "id": "5bb7d3c3-1fae-4b09-a021-5ef7a9d3b741",
+    "floor": 9,
+    "baseX": 32768,
+    "baseY": 31232,
+    "filename": "Minimap_Color_32768_31232_9.png",
+    "imported": true
+  },
+  {
+    "id": "eb1bf254-f193-45f0-87e7-3dd929852606",
+    "floor": 9,
+    "baseX": 32768,
+    "baseY": 31488,
+    "filename": "Minimap_Color_32768_31488_9.png",
+    "imported": true
+  },
+  {
+    "id": "a923400a-c53d-44d2-8088-1f8b523f4e6f",
+    "floor": 9,
+    "baseX": 32768,
+    "baseY": 31744,
+    "filename": "Minimap_Color_32768_31744_9.png",
+    "imported": true
+  },
+  {
+    "id": "025ccca8-cbc1-4cb9-bc24-13b62dcc548d",
+    "floor": 9,
+    "baseX": 32768,
+    "baseY": 32000,
+    "filename": "Minimap_Color_32768_32000_9.png",
+    "imported": true
+  },
+  {
+    "id": "d8878f46-d28d-4c3d-9f42-6bb98adea1d5",
+    "floor": 9,
+    "baseX": 32768,
+    "baseY": 32256,
+    "filename": "Minimap_Color_32768_32256_9.png",
+    "imported": true
+  },
+  {
+    "id": "7acc50c6-135e-4365-9014-3058d602cc3a",
+    "floor": 9,
+    "baseX": 32768,
+    "baseY": 32512,
+    "filename": "Minimap_Color_32768_32512_9.png",
+    "imported": true
+  },
+  {
+    "id": "818248ca-c4a2-4202-adfd-e56785fba36c",
+    "floor": 9,
+    "baseX": 32768,
+    "baseY": 32768,
+    "filename": "Minimap_Color_32768_32768_9.png",
+    "imported": true
+  },
+  {
+    "id": "7f506949-b972-47c5-b494-127ae96c0d6b",
+    "floor": 9,
+    "baseX": 33024,
+    "baseY": 30976,
+    "filename": "Minimap_Color_33024_30976_9.png",
+    "imported": true
+  },
+  {
+    "id": "bf453242-828b-4961-ad52-9d909036db76",
+    "floor": 9,
+    "baseX": 33024,
+    "baseY": 31232,
+    "filename": "Minimap_Color_33024_31232_9.png",
+    "imported": true
+  },
+  {
+    "id": "82c89935-3ca7-43a2-a1e2-9fece3087b71",
+    "floor": 9,
+    "baseX": 33024,
+    "baseY": 31488,
+    "filename": "Minimap_Color_33024_31488_9.png",
+    "imported": true
+  },
+  {
+    "id": "74e32b4c-651f-4b37-8c05-d181ba60e0ba",
+    "floor": 9,
+    "baseX": 33024,
+    "baseY": 31744,
+    "filename": "Minimap_Color_33024_31744_9.png",
+    "imported": true
+  },
+  {
+    "id": "32ee601b-c85d-4d64-bcfa-4489f903e161",
+    "floor": 9,
+    "baseX": 33024,
+    "baseY": 32000,
+    "filename": "Minimap_Color_33024_32000_9.png",
+    "imported": true
+  },
+  {
+    "id": "528b6b3a-e17c-4462-b43d-0b0f86fbb8ea",
+    "floor": 9,
+    "baseX": 33024,
+    "baseY": 32256,
+    "filename": "Minimap_Color_33024_32256_9.png",
+    "imported": true
+  },
+  {
+    "id": "6329ed4a-69ff-41f9-b339-2a8a0e22eed2",
+    "floor": 9,
+    "baseX": 33024,
+    "baseY": 32512,
+    "filename": "Minimap_Color_33024_32512_9.png",
+    "imported": true
+  },
+  {
+    "id": "40bc3e2f-35fe-43d7-8e8f-0760e8ae2fed",
+    "floor": 9,
+    "baseX": 33024,
+    "baseY": 32768,
+    "filename": "Minimap_Color_33024_32768_9.png",
+    "imported": true
+  },
+  {
+    "id": "6d16982e-42b5-412a-9852-a0c256c5fdbc",
+    "floor": 9,
+    "baseX": 33280,
+    "baseY": 30976,
+    "filename": "Minimap_Color_33280_30976_9.png",
+    "imported": true
+  },
+  {
+    "id": "f7a9ee63-d314-4d4d-a81c-1068dd3fa648",
+    "floor": 9,
+    "baseX": 33280,
+    "baseY": 31232,
+    "filename": "Minimap_Color_33280_31232_9.png",
+    "imported": true
+  },
+  {
+    "id": "a545d17a-c328-49ad-be1a-7e40e753892c",
+    "floor": 9,
+    "baseX": 33280,
+    "baseY": 31488,
+    "filename": "Minimap_Color_33280_31488_9.png",
+    "imported": true
+  },
+  {
+    "id": "2a9ac34c-c5fa-4ee1-a65a-4c76a07e1437",
+    "floor": 9,
+    "baseX": 33280,
+    "baseY": 31744,
+    "filename": "Minimap_Color_33280_31744_9.png",
+    "imported": true
+  },
+  {
+    "id": "ce336998-83d1-451e-99d0-d264c96f1a96",
+    "floor": 9,
+    "baseX": 33280,
+    "baseY": 32000,
+    "filename": "Minimap_Color_33280_32000_9.png",
+    "imported": true
+  },
+  {
+    "id": "c03c1b1d-c86d-4afe-a947-5451a19892c3",
+    "floor": 9,
+    "baseX": 33280,
+    "baseY": 32256,
+    "filename": "Minimap_Color_33280_32256_9.png",
+    "imported": true
+  },
+  {
+    "id": "5442662c-9b76-40b0-9eb4-d353d8b6741b",
+    "floor": 9,
+    "baseX": 33280,
+    "baseY": 32512,
+    "filename": "Minimap_Color_33280_32512_9.png",
+    "imported": true
+  },
+  {
+    "id": "c0107b78-967b-4669-8679-2a0a36f80c11",
+    "floor": 9,
+    "baseX": 33280,
+    "baseY": 32768,
+    "filename": "Minimap_Color_33280_32768_9.png",
+    "imported": true
+  },
+  {
+    "id": "87b34c50-75f9-470a-a637-9f198656efe8",
+    "floor": 9,
+    "baseX": 33536,
+    "baseY": 30976,
+    "filename": "Minimap_Color_33536_30976_9.png",
+    "imported": true
+  },
+  {
+    "id": "5d70cc31-ffc9-44a1-9260-3f0e8e19eaf1",
+    "floor": 9,
+    "baseX": 33536,
+    "baseY": 31232,
+    "filename": "Minimap_Color_33536_31232_9.png",
+    "imported": true
+  },
+  {
+    "id": "9aa64480-ee66-44d2-a9d2-1e9629b08267",
+    "floor": 9,
+    "baseX": 33536,
+    "baseY": 31488,
+    "filename": "Minimap_Color_33536_31488_9.png",
+    "imported": true
+  },
+  {
+    "id": "53d9fe9a-a393-47c2-b69b-1bab6ec3cba3",
+    "floor": 9,
+    "baseX": 33536,
+    "baseY": 31744,
+    "filename": "Minimap_Color_33536_31744_9.png",
+    "imported": true
+  },
+  {
+    "id": "3fc5748a-5bcb-45d1-adf8-01dbebea6726",
+    "floor": 9,
+    "baseX": 33536,
+    "baseY": 32000,
+    "filename": "Minimap_Color_33536_32000_9.png",
+    "imported": true
+  },
+  {
+    "id": "917ff65b-4746-4a9b-ab92-039f5071e922",
+    "floor": 9,
+    "baseX": 33536,
+    "baseY": 32256,
+    "filename": "Minimap_Color_33536_32256_9.png",
+    "imported": true
+  },
+  {
+    "id": "6d24c2e7-b917-473a-b790-ef6ef88847f6",
+    "floor": 9,
+    "baseX": 33536,
+    "baseY": 32512,
+    "filename": "Minimap_Color_33536_32512_9.png",
+    "imported": true
+  },
+  {
+    "id": "f74da9bd-2eec-4baf-9397-ebd85e5273c0",
+    "floor": 9,
+    "baseX": 33536,
+    "baseY": 32768,
+    "filename": "Minimap_Color_33536_32768_9.png",
+    "imported": true
+  },
+  {
+    "id": "72bbe43d-c0e5-4a80-8236-b7dc440c1860",
+    "floor": 9,
+    "baseX": 33792,
+    "baseY": 30976,
+    "filename": "Minimap_Color_33792_30976_9.png",
+    "imported": true
+  },
+  {
+    "id": "34b3d1e9-594f-4fba-85a4-1baf20afdf96",
+    "floor": 9,
+    "baseX": 33792,
+    "baseY": 31232,
+    "filename": "Minimap_Color_33792_31232_9.png",
+    "imported": true
+  },
+  {
+    "id": "2621651a-75c0-452f-bc07-5d189822424e",
+    "floor": 9,
+    "baseX": 33792,
+    "baseY": 31488,
+    "filename": "Minimap_Color_33792_31488_9.png",
+    "imported": true
+  },
+  {
+    "id": "aa6d8bcf-9c85-468c-a72b-9bf683b1c63c",
+    "floor": 9,
+    "baseX": 33792,
+    "baseY": 31744,
+    "filename": "Minimap_Color_33792_31744_9.png",
+    "imported": true
+  },
+  {
+    "id": "c78f797c-75a8-49d2-8154-d37d1c84a0a5",
+    "floor": 9,
+    "baseX": 33792,
+    "baseY": 32000,
+    "filename": "Minimap_Color_33792_32000_9.png",
+    "imported": true
+  },
+  {
+    "id": "05fe0910-5ac1-4cb6-b382-5cfee014ad47",
+    "floor": 9,
+    "baseX": 33792,
+    "baseY": 32256,
+    "filename": "Minimap_Color_33792_32256_9.png",
+    "imported": true
+  },
+  {
+    "id": "d137cda8-f1a5-4db0-83d9-c0aab21e9eb2",
+    "floor": 9,
+    "baseX": 33792,
+    "baseY": 32512,
+    "filename": "Minimap_Color_33792_32512_9.png",
+    "imported": true
+  },
+  {
+    "id": "2aad3f5d-cbda-4b1c-b5dc-02b2aeceb709",
+    "floor": 9,
+    "baseX": 34048,
+    "baseY": 30976,
+    "filename": "Minimap_Color_34048_30976_9.png",
+    "imported": true
+  },
+  {
+    "id": "3d74d991-4fcf-4012-83a7-ae300ef27d44",
+    "floor": 9,
+    "baseX": 34048,
+    "baseY": 31232,
+    "filename": "Minimap_Color_34048_31232_9.png",
+    "imported": true
+  },
+  {
+    "id": "5ce73376-b05f-4bd8-a072-1b543a848347",
+    "floor": 9,
+    "baseX": 34048,
+    "baseY": 31488,
+    "filename": "Minimap_Color_34048_31488_9.png",
+    "imported": true
+  },
+  {
+    "id": "3ac4b733-e1b1-4414-81a9-6a83dddb3c9d",
+    "floor": 9,
+    "baseX": 34048,
+    "baseY": 31744,
+    "filename": "Minimap_Color_34048_31744_9.png",
+    "imported": true
+  }
+]
