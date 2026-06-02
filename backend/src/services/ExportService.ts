@@ -272,7 +272,7 @@ export class ExportService {
       const annotationSvg = renderAnnotationSvg(options.annotations ?? [], tilesByFloor, bounds, scale);
       composites.push({ input: annotationSvg, left: 0, top: 0 });
 
-      return sharp({
+      return await sharp({
         create: {
           width: outputWidth,
           height: outputHeight,
