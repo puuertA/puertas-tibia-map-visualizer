@@ -195,6 +195,17 @@ export function AnnotationCanvas({
   const brushColorRef = useRef(brushColor);
   const selectedToolRef = useRef(selectedTool);
   const coordinateTransformRef = useRef(coordinateTransform);
+  const floorRef = useRef(floor);
+  const annotationsByFloorRef = useRef(annotationsByFloor);
+  const showGlobalAnnotationsRef = useRef(showGlobalAnnotations);
+  const showFloorAnnotationsRef = useRef(showFloorAnnotations);
+  const onAnnotationsChangeRef = useRef(onAnnotationsChange);
+
+  floorRef.current = floor;
+  annotationsByFloorRef.current = annotationsByFloor;
+  showGlobalAnnotationsRef.current = showGlobalAnnotations;
+  showFloorAnnotationsRef.current = showFloorAnnotations;
+  onAnnotationsChangeRef.current = onAnnotationsChange;
 
   function emitHistoryState() {
     onHistoryChange?.({
@@ -212,12 +223,14 @@ export function AnnotationCanvas({
       y: transform.maxY + TILE_SIZE - point.lat,
     });
 
-    onAnnotationsChange?.(
+    const currentFloor = floorRef.current;
+
+    onAnnotationsChangeRef.current?.(
       annotationsRef.current.map((annotation) => {
         if (annotation.type === "brush") {
           return {
             type: annotation.type,
-            floor,
+            floor: currentFloor,
             color: annotation.color,
             points: annotation.points.map(toGamePoint),
           };
@@ -226,7 +239,7 @@ export function AnnotationCanvas({
         if (annotation.type === "text") {
           return {
             type: annotation.type,
-            floor,
+            floor: currentFloor,
             color: annotation.color,
             point: toGamePoint(annotation.point),
             text: annotation.text,
@@ -235,7 +248,7 @@ export function AnnotationCanvas({
 
         return {
           type: annotation.type,
-          floor,
+          floor: currentFloor,
           color: annotation.color,
           a: toGamePoint(annotation.a),
           b: toGamePoint(annotation.b),
@@ -289,11 +302,12 @@ export function AnnotationCanvas({
     };
 
     layerGroupRef.current.clearLayers();
+    const currentFloor = floorRef.current;
 
-    if (showGlobalAnnotations) {
-      Object.entries(annotationsByFloor).forEach(([sourceFloor, annotations]) => {
+    if (showGlobalAnnotationsRef.current) {
+      Object.entries(annotationsByFloorRef.current).forEach(([sourceFloor, annotations]) => {
         const numericFloor = Number(sourceFloor);
-        if (numericFloor === floor) return;
+        if (numericFloor === currentFloor) return;
 
         annotations.forEach((annotation) => {
           layerGroupRef.current?.addLayer(makeLayer(fromExportAnnotation(annotation), numericFloor, false));
@@ -301,9 +315,9 @@ export function AnnotationCanvas({
       });
     }
 
-    if (showFloorAnnotations) {
+    if (showFloorAnnotationsRef.current) {
       annotationsRef.current.forEach((annotation) => {
-        layerGroupRef.current?.addLayer(makeLayer(annotation, floor, true));
+        layerGroupRef.current?.addLayer(makeLayer(annotation, currentFloor, true));
       });
     }
   }
@@ -341,7 +355,7 @@ export function AnnotationCanvas({
     }
 
     if (!annotation) return;
-    draftLayerRef.current = makeLayer(annotation, floor, true);
+    draftLayerRef.current = makeLayer(annotation, floorRef.current, true);
     layerGroupRef.current.addLayer(draftLayerRef.current);
   }
 
@@ -551,7 +565,7 @@ export function AnnotationCanvas({
 
   useEffect(() => {
     renderAnnotations();
-  }, [annotationsByFloor, showGlobalAnnotations, showFloorAnnotations, coordinateTransform]);
+  }, [floor, annotationsByFloor, showGlobalAnnotations, showFloorAnnotations, coordinateTransform]);
 
   return null;
 }
