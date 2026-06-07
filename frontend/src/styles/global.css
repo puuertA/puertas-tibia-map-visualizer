@@ -259,6 +259,56 @@ body,
   line-height: 1.35;
 }
 
+.import-guide {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  margin-top: 8px;
+  padding: 9px;
+  background: rgba(168, 85, 247, 0.08);
+  border: 1px dashed rgba(232, 121, 249, 0.42);
+  border-radius: 12px;
+}
+
+.import-guide-icon {
+  display: grid;
+  width: 42px;
+  height: 34px;
+  place-items: center;
+  background: rgba(232, 121, 249, 0.14);
+  border: 1px solid rgba(232, 121, 249, 0.34);
+  border-radius: 9px;
+  color: var(--accent);
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+.import-guide strong,
+.import-guide span {
+  display: block;
+}
+
+.import-guide strong {
+  color: var(--text-main);
+  font-size: 0.82rem;
+  line-height: 1.25;
+}
+
+.import-guide span {
+  margin-top: 3px;
+  color: var(--text-muted);
+  font-size: 0.76rem;
+  line-height: 1.25;
+}
+
+.import-guide code {
+  color: #f0abfc;
+  font-family: Consolas, "Liberation Mono", monospace;
+  font-size: 0.75rem;
+  overflow-wrap: anywhere;
+}
+
 .map-panel {
   width: min(100%, 1540px);
   flex: 1;

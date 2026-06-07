@@ -373,6 +373,13 @@ function App() {
           >
             {importingTibiaMaps ? "Importando mapa..." : "Importar Mapa do Client"}
           </button>
+          <div className="import-guide" aria-label="Arquivos esperados para importar mapa">
+            <span className="import-guide-icon" aria-hidden>PNG</span>
+            <div>
+              <strong>Selecione a pasta minimap ou varios PNGs</strong>
+              <span>Arquivos esperados: <code>Minimap_Color_*.png</code></span>
+            </div>
+          </div>
           <p className="hint-text">
             {status
               ? `${status.originalFiles} imagens carregadas | ${status.floors.length} andares detectados`
@@ -439,6 +446,13 @@ function App() {
             >
               Escolher minimapmarkers.bin
             </button>
+          </div>
+          <div className="import-guide" aria-label="Arquivo esperado para importar marcacoes">
+            <span className="import-guide-icon" aria-hidden>BIN</span>
+            <div>
+              <strong>Selecione o arquivo de marcacoes do client</strong>
+              <span>Arquivo esperado: <code>minimapmarkers.bin</code></span>
+            </div>
           </div>
           <input
             ref={fileInputRef}
