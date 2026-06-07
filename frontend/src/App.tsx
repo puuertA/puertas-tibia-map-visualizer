@@ -4,7 +4,7 @@ import { FloorSelector } from "./components/FloorSelector";
 import { LayerPanel } from "./components/LayerPanel";
 import { MapViewer } from "./components/MapViewer";
 import { Sidebar } from "./components/Sidebar";
-import { api, importDefaultTibiaMaps, importDefaultTibiaMarkers } from "./services/api";
+import { API_BASE, api, importDefaultTibiaMaps, importDefaultTibiaMarkers } from "./services/api";
 import { ExportAnnotation } from "./types/ExportAnnotation";
 import { parseTibiaMinimapMarkers } from "./utils/tibiaMinimapMarkers";
 
@@ -15,6 +15,15 @@ interface ToastMessage {
   type: ToastType;
   title: string;
   description?: string;
+}
+
+function canBackendReadLocalTibiaClient() {
+  try {
+    const apiUrl = new URL(API_BASE, window.location.href);
+    return ["localhost", "127.0.0.1", "::1"].includes(apiUrl.hostname);
+  } catch {
+    return false;
+  }
 }
 
 function App() {
@@ -189,6 +198,11 @@ function App() {
   }
 
   async function handleImportDefaultTibiaMarkers() {
+    if (!canBackendReadLocalTibiaClient()) {
+      tibiaMarkersInputRef.current?.click();
+      return;
+    }
+
     try {
       setImportingTibiaMarkers(true);
       const result = await importDefaultTibiaMarkers();
@@ -319,7 +333,11 @@ function App() {
               className="tool-button full-grid-button"
               onClick={handleImportDefaultTibiaMarkers}
               disabled={importingTibiaMarkers}
-              title="Importa automaticamente C:\\Users\\Administrator\\AppData\\Local\\Tibia\\packages\\Tibia\\minimap\\minimapmarkers.bin"
+              title={
+                canBackendReadLocalTibiaClient()
+                  ? "Importa automaticamente C:\\Users\\Administrator\\AppData\\Local\\Tibia\\packages\\Tibia\\minimap\\minimapmarkers.bin"
+                  : "Selecione o arquivo minimapmarkers.bin do seu client Tibia."
+              }
             >
               {importingTibiaMarkers ? "Importando..." : "Importar Client"}
             </button>
