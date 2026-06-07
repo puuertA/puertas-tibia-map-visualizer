@@ -33,6 +33,26 @@ export async function importDefaultTibiaMaps() {
   return response.data;
 }
 
+export async function uploadTibiaMapFiles(
+  files: Array<{ filename: string; data: string }>,
+  options: { clearExisting: boolean; generateTiles: boolean }
+) {
+  const response = await api.post<{
+    success: boolean;
+    message: string;
+    importedFiles: number;
+    importedFloorsCount: number;
+    floors: number[];
+    tilesGenerated: boolean;
+    generatedTiles: number;
+  }>("/maps/import/files", {
+    files,
+    clearExisting: options.clearExisting,
+    generateTiles: options.generateTiles,
+  });
+  return response.data;
+}
+
 export async function importDefaultTibiaMarkers() {
   const response = await api.get<{
     sourcePath: string;

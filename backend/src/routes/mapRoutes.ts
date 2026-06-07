@@ -52,6 +52,40 @@ mapRoutes.post("/import/default", (_req, res) => {
   }
 });
 
+mapRoutes.post("/import/files", (req, res) => {
+  try {
+    const { files, clearExisting, generateTiles } = req.body;
+
+    if (!Array.isArray(files)) {
+      return res.status(400).json({ message: "files deve ser uma lista", success: false });
+    }
+
+    const importResult = MapImportService.importUploadedMapFiles(files, Boolean(clearExisting));
+
+    if (!importResult.success) {
+      return res.status(400).json(importResult);
+    }
+
+    if (!generateTiles) {
+      return res.json({
+        ...importResult,
+        tilesGenerated: false,
+        generatedTiles: 0,
+      });
+    }
+
+    const tileResult = TileGeneratorService.generateTiles();
+    res.json({
+      ...importResult,
+      tilesGenerated: tileResult.success,
+      generatedTiles: tileResult.generatedTiles,
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Erro desconhecido";
+    res.status(500).json({ message, success: false });
+  }
+});
+
 mapRoutes.get("/default-minimap-path", (_req, res) => {
   try {
     res.json({ path: MapImportService.getDefaultMinimapPath() });

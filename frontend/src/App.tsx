@@ -4,7 +4,13 @@ import { FloorSelector } from "./components/FloorSelector";
 import { LayerPanel } from "./components/LayerPanel";
 import { MapViewer } from "./components/MapViewer";
 import { Sidebar } from "./components/Sidebar";
-import { API_BASE, api, importDefaultTibiaMaps, importDefaultTibiaMarkers } from "./services/api";
+import {
+  API_BASE,
+  api,
+  importDefaultTibiaMaps,
+  importDefaultTibiaMarkers,
+  uploadTibiaMapFiles,
+} from "./services/api";
 import { ExportAnnotation } from "./types/ExportAnnotation";
 import { parseTibiaMinimapMarkers } from "./utils/tibiaMinimapMarkers";
 
@@ -24,6 +30,15 @@ function canBackendReadLocalTibiaClient() {
   } catch {
     return false;
   }
+}
+
+function readFileAsDataUrl(file: File) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result));
+    reader.onerror = () => reject(reader.error ?? new Error("Nao foi possivel ler o arquivo"));
+    reader.readAsDataURL(file);
+  });
 }
 
 function App() {
@@ -48,6 +63,7 @@ function App() {
   const [importingTibiaMarkers, setImportingTibiaMarkers] = useState(false);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const tibiaMapFilesInputRef = useRef<HTMLInputElement | null>(null);
   const tibiaMarkersInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
@@ -88,6 +104,11 @@ function App() {
   }
 
   async function handleImportDefaultTibiaMaps() {
+    if (!canBackendReadLocalTibiaClient()) {
+      tibiaMapFilesInputRef.current?.click();
+      return;
+    }
+
     try {
       setImportingTibiaMaps(true);
       const result = await importDefaultTibiaMaps();
@@ -110,6 +131,58 @@ function App() {
     } catch (error) {
       console.error("Erro ao importar mapa do client Tibia:", error);
       notify("error", "Nao foi possivel importar o mapa", "Confira se o client Tibia ja criou arquivos na pasta minimap.");
+    } finally {
+      setImportingTibiaMaps(false);
+    }
+  }
+
+  async function handleImportTibiaMapFiles(event: ChangeEvent<HTMLInputElement>) {
+    const selectedFiles = Array.from(event.target.files ?? []).filter((file) => {
+      return file.name.toLowerCase().endsWith(".png");
+    });
+    event.target.value = "";
+
+    if (selectedFiles.length === 0) return;
+
+    const batchSize = 24;
+    let importedFiles = 0;
+    let generatedTiles = 0;
+    let floors: number[] = [];
+
+    try {
+      setImportingTibiaMaps(true);
+
+      for (let index = 0; index < selectedFiles.length; index += batchSize) {
+        const batch = selectedFiles.slice(index, index + batchSize);
+        const files = await Promise.all(
+          batch.map(async (file) => ({
+            filename: file.name,
+            data: await readFileAsDataUrl(file),
+          }))
+        );
+        const isFirstBatch = index === 0;
+        const isLastBatch = index + batchSize >= selectedFiles.length;
+        const result = await uploadTibiaMapFiles(files, {
+          clearExisting: isFirstBatch,
+          generateTiles: isLastBatch,
+        });
+
+        importedFiles += result.importedFiles;
+        generatedTiles = result.generatedTiles;
+        floors = result.floors.length > 0 ? result.floors : floors;
+      }
+
+      await loadStatus();
+      setResourcesRevision((revision) => revision + 1);
+      setSelectedFloor((currentFloor) => (floors.includes(currentFloor) ? currentFloor : floors[0] ?? 7));
+      notify(
+        "success",
+        "Mapa do client importado",
+        `${importedFiles} arquivos enviados e ${generatedTiles} tiles processados.`
+      );
+    } catch (error) {
+      console.error("Erro ao importar arquivos do mapa do Tibia:", error);
+      notify("error", "Nao foi possivel importar o mapa", "Selecione os PNGs Minimap_Color_*.png da pasta minimap.");
     } finally {
       setImportingTibiaMaps(false);
     }
@@ -243,13 +316,17 @@ function App() {
             <button type="button" className="ghost-button" onClick={() => setTutorialOpen(true)}>
               Tutorial
             </button>
-            <button
-              onClick={handleImportDefaultTibiaMaps}
-              disabled={importingTibiaMaps}
-              type="button"
-              className="primary-button header-primary-button"
-              title="Importa automaticamente os PNGs de C:\\Users\\Administrator\\AppData\\Local\\Tibia\\packages\\Tibia\\minimap"
-            >
+          <button
+            onClick={handleImportDefaultTibiaMaps}
+            disabled={importingTibiaMaps}
+            type="button"
+            className="primary-button header-primary-button"
+            title={
+              canBackendReadLocalTibiaClient()
+                ? "Importa automaticamente os PNGs de C:\\Users\\Administrator\\AppData\\Local\\Tibia\\packages\\Tibia\\minimap"
+                : "Selecione os PNGs Minimap_Color_*.png da pasta minimap do Tibia."
+            }
+          >
               {importingTibiaMaps ? "Importando mapa..." : "Importar Mapa"}
             </button>
           </div>
@@ -288,7 +365,11 @@ function App() {
             disabled={importingTibiaMaps}
             type="button"
             className="tool-button full-width-button resource-action-button"
-            title="Importa automaticamente os PNGs de C:\\Users\\Administrator\\AppData\\Local\\Tibia\\packages\\Tibia\\minimap"
+            title={
+              canBackendReadLocalTibiaClient()
+                ? "Importa automaticamente os PNGs de C:\\Users\\Administrator\\AppData\\Local\\Tibia\\packages\\Tibia\\minimap"
+                : "Selecione os PNGs Minimap_Color_*.png da pasta minimap do Tibia."
+            }
           >
             {importingTibiaMaps ? "Importando mapa..." : "Importar Mapa do Client"}
           </button>
@@ -297,6 +378,15 @@ function App() {
               ? `${status.originalFiles} imagens carregadas | ${status.floors.length} andares detectados`
               : "Carregando recursos locais..."}
           </p>
+          <input
+            ref={tibiaMapFilesInputRef}
+            className="hidden-file-input"
+            type="file"
+            accept=".png,image/png"
+            multiple
+            onChange={handleImportTibiaMapFiles}
+            {...({ webkitdirectory: "", directory: "" } as Record<string, string>)}
+          />
         </section>
 
         <FloorSelector
