@@ -14,11 +14,50 @@ mapRoutes.post("/import", (req, res) => {
       return res.status(400).json({ message: "sourcePath é obrigatório" });
     }
 
-    const result = MapImportService.importMaps(sourcePath);
-    res.json(result);
+    const importResult = MapImportService.importMaps(sourcePath);
+
+    if (!importResult.success) {
+      return res.status(404).json(importResult);
+    }
+
+    const tileResult = TileGeneratorService.generateTiles();
+    res.json({
+      ...importResult,
+      tilesGenerated: tileResult.success,
+      generatedTiles: tileResult.generatedTiles,
+    });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Erro desconhecido";
     res.status(500).json({ message, success: false });
+  }
+});
+
+mapRoutes.post("/import/default", (_req, res) => {
+  try {
+    const importResult = MapImportService.importDefaultMaps();
+
+    if (!importResult.success) {
+      return res.status(404).json(importResult);
+    }
+
+    const tileResult = TileGeneratorService.generateTiles();
+    res.json({
+      ...importResult,
+      tilesGenerated: tileResult.success,
+      generatedTiles: tileResult.generatedTiles,
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Erro desconhecido";
+    res.status(500).json({ message, success: false });
+  }
+});
+
+mapRoutes.get("/default-minimap-path", (_req, res) => {
+  try {
+    res.json({ path: MapImportService.getDefaultMinimapPath() });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Erro desconhecido";
+    res.status(500).json({ message });
   }
 });
 

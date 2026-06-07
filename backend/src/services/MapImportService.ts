@@ -3,8 +3,9 @@ import path from "path";
 import { parseMinimapFilename } from "../utils/coordinateUtils";
 import {
   ensureDirectories,
-  getMapsOriginalDir,
   getMapsImportedDir,
+  getMapsOriginalDir,
+  getResourcesMinimapDir,
   listPngFiles,
 } from "../utils/fileUtils";
 
@@ -16,73 +17,77 @@ export interface ImportResult {
   floors: number[];
 }
 
-/**
- * Serviço para importar arquivos de minimapa do Tibia.
- */
 export class MapImportService {
-  /**
-   * Importa arquivos PNG de minimapa de um caminho local.
-   * Copia arquivos para pasta interna e registra estrutura de andares.
-   */
+  static getDefaultMinimapPath(): string {
+    const localAppData = process.env.LOCALAPPDATA;
+
+    if (!localAppData) {
+      throw new Error("LOCALAPPDATA nao esta definido neste sistema");
+    }
+
+    return path.join(localAppData, "Tibia", "packages", "Tibia", "minimap");
+  }
+
+  static importDefaultMaps(): ImportResult & { sourcePath: string } {
+    const sourcePath = this.getDefaultMinimapPath();
+    return {
+      ...this.importMaps(sourcePath),
+      sourcePath,
+    };
+  }
+
   static importMaps(sourcePath: string): ImportResult {
     try {
       ensureDirectories();
 
-      // Verifica se fonte existe
       if (!fs.existsSync(sourcePath)) {
         return {
           success: false,
-          message: `Caminho não encontrado: ${sourcePath}`,
+          message: `Caminho nao encontrado: ${sourcePath}`,
           importedFiles: 0,
           importedFloorsCount: 0,
           floors: [],
         };
       }
 
-      // Lista arquivos PNG do minimapa
       const files = fs
         .readdirSync(sourcePath)
-        .filter((f) => f.toLowerCase().endsWith(".png"));
-
-      if (files.length === 0) {
-        return {
-          success: false,
-          message: "Nenhum arquivo PNG encontrado",
-          importedFiles: 0,
-          importedFloorsCount: 0,
-          floors: [],
-        };
-      }
+        .filter((file) => file.toLowerCase().endsWith(".png"));
 
       const originalDir = getMapsOriginalDir();
       const importedDir = getMapsImportedDir();
+      const resourcesMinimapDir = getResourcesMinimapDir();
       const floorsSet = new Set<number>();
       let copiedCount = 0;
 
-      // Sincroniza com a fonte atual: evita mistura de mapas antigos.
-      for (const dir of [originalDir, importedDir]) {
-        if (fs.existsSync(dir)) {
-          for (const existing of fs.readdirSync(dir)) {
-            if (existing.toLowerCase().endsWith(".png")) {
-              fs.rmSync(path.join(dir, existing), { force: true });
-            }
+      for (const dir of [originalDir, importedDir, resourcesMinimapDir]) {
+        if (!fs.existsSync(dir)) continue;
+
+        for (const existing of fs.readdirSync(dir)) {
+          if (existing.toLowerCase().endsWith(".png")) {
+            fs.rmSync(path.join(dir, existing), { force: true });
           }
         }
       }
 
-      // Copia arquivos para a pasta interna como recursos do projeto
+      if (files.length === 0) {
+        return {
+          success: true,
+          message: "Nenhum arquivo PNG encontrado. O mapa interno foi limpo.",
+          importedFiles: 0,
+          importedFloorsCount: 0,
+          floors: [],
+        };
+      }
+
       for (const file of files) {
         const sourceFull = path.join(sourcePath, file);
-        const originalFull = path.join(originalDir, file);
-        const importedFull = path.join(importedDir, file);
-
-        // Sempre sobrescreve para refletir exatamente o minimapa atual.
-        fs.copyFileSync(sourceFull, originalFull);
-        fs.copyFileSync(sourceFull, importedFull);
+        fs.copyFileSync(sourceFull, path.join(originalDir, file));
+        fs.copyFileSync(sourceFull, path.join(importedDir, file));
+        fs.copyFileSync(sourceFull, path.join(resourcesMinimapDir, file));
 
         copiedCount++;
 
-        // Extrai andar
         const coords = parseMinimapFilename(file);
         if (coords) {
           floorsSet.add(coords.floor);
@@ -93,7 +98,7 @@ export class MapImportService {
 
       return {
         success: true,
-        message: `Mapas importados com sucesso (${copiedCount} arquivos PNG copiados como recurso)`,
+        message: `Mapas importados com sucesso (${copiedCount} arquivos PNG copiados)`,
         importedFiles: copiedCount,
         importedFloorsCount: floors.length,
         floors,
@@ -102,7 +107,7 @@ export class MapImportService {
       const message = error instanceof Error ? error.message : String(error);
       return {
         success: false,
-        message: `Erro na importação: ${message}`,
+        message: `Erro na importacao: ${message}`,
         importedFiles: 0,
         importedFloorsCount: 0,
         floors: [],
@@ -110,9 +115,6 @@ export class MapImportService {
     }
   }
 
-  /**
-   * Retorna lista de andares já importados.
-   */
   static getImportedFloors(): number[] {
     const importedFiles = listPngFiles(getMapsImportedDir());
     const originalFiles = listPngFiles(getMapsOriginalDir());

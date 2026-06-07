@@ -4,6 +4,7 @@ import { annotationRoutes } from "./routes/annotationRoutes";
 import { exportRoutes } from "./routes/exportRoutes";
 import { mapRoutes } from "./routes/mapRoutes";
 import { projectRoutes } from "./routes/projectRoutes";
+import { tibiaMarkerRoutes } from "./routes/tibiaMarkerRoutes";
 import { tileRoutes } from "./routes/tileRoutes";
 import { ensureDirectories } from "./utils/fileUtils";
 import { BootstrapService } from "./services/BootstrapService";
@@ -42,6 +43,7 @@ app.use("/api/tiles", tileRoutes);
 app.use("/api/annotations", annotationRoutes);
 app.use("/api/project", projectRoutes);
 app.use("/api/export", exportRoutes);
+app.use("/api/tibia-markers", tibiaMarkerRoutes);
 
 app.use((_req, res) => {
   res.status(404).json({ message: "Route not found" });

@@ -1,5 +1,6 @@
 import axios from "axios";
 import { Annotation } from "../types/Annotation";
+import { ExportAnnotation } from "../types/ExportAnnotation";
 
 export const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:3333/api";
 
@@ -15,6 +16,29 @@ export const api = axios.create({
  */
 export async function importMaps(sourcePath: string) {
   const response = await api.post("/maps/import", { sourcePath });
+  return response.data;
+}
+
+export async function importDefaultTibiaMaps() {
+  const response = await api.post<{
+    success: boolean;
+    message: string;
+    sourcePath: string;
+    importedFiles: number;
+    importedFloorsCount: number;
+    floors: number[];
+    tilesGenerated: boolean;
+    generatedTiles: number;
+  }>("/maps/import/default");
+  return response.data;
+}
+
+export async function importDefaultTibiaMarkers() {
+  const response = await api.get<{
+    sourcePath: string;
+    importedCount: number;
+    annotationsByFloor: Record<string, ExportAnnotation[]>;
+  }>("/tibia-markers/default");
   return response.data;
 }
 
@@ -45,8 +69,8 @@ export async function getTileMetadata(floor: number) {
 /**
  * Retorna URL da imagem de tile.
  */
-export function getTileImageUrl(floor: number, baseX: number, baseY: number) {
-  return `${API_BASE}/tiles/${floor}/${baseX}/${baseY}`;
+export function getTileImageUrl(floor: number, baseX: number, baseY: number, revision = 0) {
+  return `${API_BASE}/tiles/${floor}/${baseX}/${baseY}?v=${revision}`;
 }
 
 /**

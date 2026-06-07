@@ -13,7 +13,8 @@ export type ExportAnnotation =
   | { type: "arrow"; floor: number; color: string; a: Point; b: Point }
   | { type: "rect"; floor: number; color: string; a: Point; b: Point }
   | { type: "circle"; floor: number; color: string; a: Point; b: Point }
-  | { type: "text"; floor: number; color: string; point: Point; text: string };
+  | { type: "text"; floor: number; color: string; point: Point; text: string }
+  | { type: "marker"; floor: number; color: string; point: Point; icon: number; text: string };
 
 interface ExportOptions {
   floor?: number;
@@ -64,6 +65,16 @@ function calculateBounds(tiles: TileMetadata[]): Bounds {
 
 function escapeAttr(value: string) {
   return value.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
+}
+
+function getMarkerIconPath(icon: number) {
+  const extensions = ["png", "svg"];
+  const candidates = extensions.flatMap((extension) => [
+    path.resolve(process.cwd(), "..", "frontend", "public", "tibia-marker-icons", `${icon}.${extension}`),
+    path.resolve(__dirname, "..", "..", "..", "frontend", "public", "tibia-marker-icons", `${icon}.${extension}`),
+  ]);
+
+  return candidates.find((candidate) => fs.existsSync(candidate));
 }
 
 function annotationPointToPixel(point: Point, bounds: Bounds) {
@@ -136,6 +147,30 @@ function renderAnnotationSvg(
       elements.push(
         `<text x="${point.x}" y="${point.y}" fill="${color}" font-size="${Math.max(10, 18 * scale)}" font-family="Arial, sans-serif" font-weight="700" stroke="#0f172a" stroke-width="${Math.max(1, 3 * scale)}" paint-order="stroke" dominant-baseline="middle">${escapeAttr(annotation.text)}</text>`
       );
+      continue;
+    }
+
+    if (annotation.type === "marker") {
+      const point = scalePoint(annotationPointToPixel(annotation.point, bounds), scale);
+      const radius = Math.max(4, 8 * scale);
+      const fontSize = Math.max(7, 8 * scale);
+      const iconPath = getMarkerIconPath(annotation.icon);
+
+      if (iconPath) {
+        const iconData = fs.readFileSync(iconPath).toString("base64");
+        const mimeType = iconPath.endsWith(".svg") ? "image/svg+xml" : "image/png";
+        const size = Math.max(10, 20 * scale);
+        elements.push(
+          `<image href="data:${mimeType};base64,${iconData}" x="${point.x - size / 2}" y="${point.y - size / 2}" width="${size}" height="${size}"/>`
+        );
+      } else {
+        elements.push(
+          `<circle cx="${point.x}" cy="${point.y}" r="${radius}" fill="${color}" stroke="#0f172a" stroke-width="${Math.max(1, 2 * scale)}"/>`
+        );
+        elements.push(
+          `<text x="${point.x}" y="${point.y + fontSize * 0.08}" fill="#ffffff" font-size="${fontSize}" font-family="Arial, sans-serif" font-weight="800" text-anchor="middle" dominant-baseline="middle">${annotation.icon + 1}</text>`
+        );
+      }
       continue;
     }
 

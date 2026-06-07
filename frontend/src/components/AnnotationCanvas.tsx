@@ -14,10 +14,14 @@ interface AnnotationCanvasProps {
   redoNonce: number;
   clearNonce: number;
   annotationsRevision: number;
+  tibiaMarkersRevision: number;
   initialAnnotations?: ExportAnnotation[];
   annotationsByFloor?: Record<number, ExportAnnotation[]>;
+  tibiaMarkersByFloor?: Record<number, ExportAnnotation[]>;
   showGlobalAnnotations: boolean;
   showFloorAnnotations: boolean;
+  showTibiaGlobalMarkers: boolean;
+  showTibiaFloorMarkers: boolean;
   onHistoryChange?: (state: { canUndo: boolean; canRedo: boolean }) => void;
   onAnnotationsChange?: (annotations: ExportAnnotation[]) => void;
 }
@@ -30,7 +34,8 @@ type Annotation =
   | { type: "arrow"; color: string; a: Point; b: Point }
   | { type: "rect"; color: string; a: Point; b: Point }
   | { type: "circle"; color: string; a: Point; b: Point }
-  | { type: "text"; color: string; point: Point; text: string };
+  | { type: "text"; color: string; point: Point; text: string }
+  | { type: "marker"; color: string; point: Point; icon: number; text: string };
 
 const PANE_NAME = "annotationPane";
 
@@ -118,8 +123,8 @@ function makeLayer(annotation: Annotation, sourceFloor: number, isCurrentFloor: 
   };
   const tooltip = `Marcação feita no andar arquivo ${sourceFloor} | Tibia ${toTibiaLevelLabel(sourceFloor)}`;
 
-  function withTooltip<T extends L.Layer>(layer: T) {
-    layer.bindTooltip(tooltip, {
+  function withTooltip<T extends L.Layer>(layer: T, content = tooltip) {
+    layer.bindTooltip(content, {
       direction: "top",
       opacity: 0.95,
       sticky: true,
@@ -160,6 +165,23 @@ function makeLayer(annotation: Annotation, sourceFloor: number, isCurrentFloor: 
     }));
   }
 
+  if (annotation.type === "marker") {
+    const content = annotation.text
+      ? `${escapeHtml(annotation.text)}<br><span>${tooltip}</span>`
+      : tooltip;
+
+    return withTooltip(L.marker(toLatLng(annotation.point), {
+      interactive: true,
+      pane: PANE_NAME,
+      icon: L.divIcon({
+        className: "tibia-marker-icon",
+        html: `<span style="--marker-color:${annotation.color}" title="Icone ${annotation.icon}"><b>${annotation.icon}</b><img src="/tibia-marker-icons/${annotation.icon}.png" alt="" onload="this.parentElement.classList.add('has-client-icon')" onerror="this.remove()" /></span>`,
+        iconSize: [22, 22],
+        iconAnchor: [11, 11],
+      }),
+    }), content);
+  }
+
   return withTooltip(L.polygon(buildEllipsePoints(annotation.a, annotation.b), {
     ...pathOptions,
     fill: false,
@@ -177,10 +199,14 @@ export function AnnotationCanvas({
   redoNonce,
   clearNonce,
   annotationsRevision,
+  tibiaMarkersRevision,
   initialAnnotations = [],
   annotationsByFloor = {},
+  tibiaMarkersByFloor = {},
   showGlobalAnnotations,
   showFloorAnnotations,
+  showTibiaGlobalMarkers,
+  showTibiaFloorMarkers,
   onHistoryChange,
   onAnnotationsChange,
 }: AnnotationCanvasProps) {
@@ -197,14 +223,20 @@ export function AnnotationCanvas({
   const coordinateTransformRef = useRef(coordinateTransform);
   const floorRef = useRef(floor);
   const annotationsByFloorRef = useRef(annotationsByFloor);
+  const tibiaMarkersByFloorRef = useRef(tibiaMarkersByFloor);
   const showGlobalAnnotationsRef = useRef(showGlobalAnnotations);
   const showFloorAnnotationsRef = useRef(showFloorAnnotations);
+  const showTibiaGlobalMarkersRef = useRef(showTibiaGlobalMarkers);
+  const showTibiaFloorMarkersRef = useRef(showTibiaFloorMarkers);
   const onAnnotationsChangeRef = useRef(onAnnotationsChange);
 
   floorRef.current = floor;
   annotationsByFloorRef.current = annotationsByFloor;
+  tibiaMarkersByFloorRef.current = tibiaMarkersByFloor;
   showGlobalAnnotationsRef.current = showGlobalAnnotations;
   showFloorAnnotationsRef.current = showFloorAnnotations;
+  showTibiaGlobalMarkersRef.current = showTibiaGlobalMarkers;
+  showTibiaFloorMarkersRef.current = showTibiaFloorMarkers;
   onAnnotationsChangeRef.current = onAnnotationsChange;
 
   function emitHistoryState() {
@@ -242,6 +274,17 @@ export function AnnotationCanvas({
             floor: currentFloor,
             color: annotation.color,
             point: toGamePoint(annotation.point),
+            text: annotation.text,
+          };
+        }
+
+        if (annotation.type === "marker") {
+          return {
+            type: annotation.type,
+            floor: currentFloor,
+            color: annotation.color,
+            point: toGamePoint(annotation.point),
+            icon: annotation.icon,
             text: annotation.text,
           };
         }
@@ -293,6 +336,16 @@ export function AnnotationCanvas({
         };
       }
 
+      if (annotation.type === "marker") {
+        return {
+          type: annotation.type,
+          color: annotation.color,
+          point: fromGamePoint(annotation.point),
+          icon: annotation.icon,
+          text: annotation.text,
+        };
+      }
+
       return {
         type: annotation.type,
         color: annotation.color,
@@ -318,6 +371,23 @@ export function AnnotationCanvas({
     if (showFloorAnnotationsRef.current) {
       annotationsRef.current.forEach((annotation) => {
         layerGroupRef.current?.addLayer(makeLayer(annotation, currentFloor, true));
+      });
+    }
+
+    if (showTibiaGlobalMarkersRef.current) {
+      Object.entries(tibiaMarkersByFloorRef.current).forEach(([sourceFloor, markers]) => {
+        const numericFloor = Number(sourceFloor);
+        if (numericFloor === currentFloor) return;
+
+        markers.forEach((marker) => {
+          layerGroupRef.current?.addLayer(makeLayer(fromExportAnnotation(marker), numericFloor, false));
+        });
+      });
+    }
+
+    if (showTibiaFloorMarkersRef.current) {
+      (tibiaMarkersByFloorRef.current[currentFloor] ?? []).forEach((marker) => {
+        layerGroupRef.current?.addLayer(makeLayer(fromExportAnnotation(marker), currentFloor, true));
       });
     }
   }
@@ -448,7 +518,7 @@ export function AnnotationCanvas({
         const last = draft.points[draft.points.length - 1];
         if (Math.hypot(next.lat - last.lat, next.lng - last.lng) < 0.15) return;
         draft.points = [...draft.points, next];
-      } else if (draft.type !== "text") {
+      } else if (draft.type !== "text" && draft.type !== "marker") {
         draft.b = next;
       }
 
@@ -459,7 +529,7 @@ export function AnnotationCanvas({
       if (!drawingEnabledRef.current || !draftAnnotationRef.current) return;
 
       const draft = draftAnnotationRef.current;
-      if (draft.type === "text") return;
+      if (draft.type === "text" || draft.type === "marker") return;
 
       const shouldKeep =
         draft.type === "brush"
@@ -548,6 +618,16 @@ export function AnnotationCanvas({
         };
       }
 
+      if (annotation.type === "marker") {
+        return {
+          type: annotation.type,
+          color: annotation.color,
+          point: fromGamePoint(annotation.point),
+          icon: annotation.icon,
+          text: annotation.text,
+        };
+      }
+
       return {
         type: annotation.type,
         color: annotation.color,
@@ -565,7 +645,17 @@ export function AnnotationCanvas({
 
   useEffect(() => {
     renderAnnotations();
-  }, [floor, annotationsByFloor, showGlobalAnnotations, showFloorAnnotations, coordinateTransform]);
+  }, [
+    floor,
+    annotationsByFloor,
+    tibiaMarkersByFloor,
+    showGlobalAnnotations,
+    showFloorAnnotations,
+    showTibiaGlobalMarkers,
+    showTibiaFloorMarkers,
+    coordinateTransform,
+    tibiaMarkersRevision,
+  ]);
 
   return null;
 }

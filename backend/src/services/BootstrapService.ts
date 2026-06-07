@@ -10,9 +10,6 @@ import {
   getMapsOriginalDir,
 } from "../utils/fileUtils";
 
-const DEFAULT_MINIMAP_SOURCE =
-  "C:\\Users\\Administrator\\AppData\\Local\\Tibia\\packages\\Tibia\\minimap";
-
 export class BootstrapService {
   static initialize(): { imported: boolean; generated: boolean } {
     ensureDirectories();
@@ -34,20 +31,24 @@ export class BootstrapService {
       fs.existsSync(resourceDir) &&
       fs.readdirSync(resourceDir).some((file) => file.toLowerCase().endsWith(".png"));
 
-    if (!resourceHasFiles && fs.existsSync(DEFAULT_MINIMAP_SOURCE)) {
+    const defaultMinimapSource = !resourceHasFiles
+      ? safeDefaultMinimapPath()
+      : null;
+
+    if (!resourceHasFiles && defaultMinimapSource && fs.existsSync(defaultMinimapSource)) {
       const pngFiles = fs
-        .readdirSync(DEFAULT_MINIMAP_SOURCE)
+        .readdirSync(defaultMinimapSource)
         .filter((file) => file.toLowerCase().endsWith(".png"));
 
       for (const file of pngFiles) {
-        const sourcePath = path.join(DEFAULT_MINIMAP_SOURCE, file);
+        const sourcePath = path.join(defaultMinimapSource, file);
         const resourcePath = path.join(resourceDir, file);
         if (!fs.existsSync(resourcePath)) {
           fs.copyFileSync(sourcePath, resourcePath);
         }
       }
 
-      const importResult = MapImportService.importMaps(DEFAULT_MINIMAP_SOURCE);
+      const importResult = MapImportService.importMaps(defaultMinimapSource);
       TileGeneratorService.generateTiles();
       return { imported: importResult.success, generated: true };
     }
@@ -79,5 +80,13 @@ export class BootstrapService {
     }
 
     return { imported: false, generated: false };
+  }
+}
+
+function safeDefaultMinimapPath() {
+  try {
+    return MapImportService.getDefaultMinimapPath();
+  } catch {
+    return null;
   }
 }

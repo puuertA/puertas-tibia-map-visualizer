@@ -3,6 +3,7 @@ import { getProcessedFloors } from "../services/api";
 
 interface FloorSelectorProps {
   floor?: number;
+  resourcesRevision?: number;
   onFloorChange?: (floor: number) => void;
 }
 
@@ -13,13 +14,13 @@ function toTibiaLevelLabel(floor: number) {
   return `${delta}`;
 }
 
-export function FloorSelector({ floor = 7, onFloorChange }: FloorSelectorProps) {
+export function FloorSelector({ floor = 7, resourcesRevision = 0, onFloorChange }: FloorSelectorProps) {
   const [floors, setFloors] = useState<number[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     void loadFloors();
-  }, []);
+  }, [resourcesRevision]);
 
   useEffect(() => {
     if (floors.length > 0 && !floors.includes(floor)) {

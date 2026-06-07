@@ -4,13 +4,11 @@ import { randomUUID } from "crypto";
 import { parseMinimapFilename } from "../utils/coordinateUtils";
 import {
   ensureFloorDirectory,
-  getTilesDir,
-  listPngFiles,
   getMapsImportedDir,
   getMapsOriginalDir,
+  getTilesDir,
+  listPngFiles,
 } from "../utils/fileUtils";
-
-const TILE_SIZE = 256;
 
 export interface TileMetadata {
   id: string;
@@ -21,14 +19,7 @@ export interface TileMetadata {
   imported: boolean;
 }
 
-/**
- * Serviço para gerar e gerenciar tiles do mapa.
- */
 export class TileGeneratorService {
-  /**
-   * Processa todos os arquivos importados e organiza em tiles por andar.
-   * Para MVP, cada minimapa é um "tile".
-   */
   static generateTiles(): {
     success: boolean;
     message: string;
@@ -42,21 +33,20 @@ export class TileGeneratorService {
       const originalFiles = listPngFiles(originalDir);
       const files = importedFiles.length > 0 ? importedFiles : originalFiles;
 
-      if (files.length === 0) {
-        return {
-          success: false,
-          message: "Nenhum arquivo de minimapa encontrado para gerar tiles",
-          generatedTiles: 0,
-        };
-      }
-
-      // Recria os tiles do zero para evitar resíduos de gerações anteriores.
       if (fs.existsSync(tilesDir)) {
         for (const entry of fs.readdirSync(tilesDir)) {
           if (entry.startsWith("floor_")) {
             fs.rmSync(path.join(tilesDir, entry), { recursive: true, force: true });
           }
         }
+      }
+
+      if (files.length === 0) {
+        return {
+          success: true,
+          message: "Nenhum arquivo de minimapa encontrado. Tiles antigos foram removidos.",
+          generatedTiles: 0,
+        };
       }
 
       const metadata: Record<number, TileMetadata[]> = {};
@@ -81,36 +71,21 @@ export class TileGeneratorService {
 
         metadata[floor].push(tile);
 
-        // Cria link/cópia do arquivo na pasta de tiles
         const tileDestName = `tile_${coords.baseX}_${coords.baseY}.png`;
         const tilePath = path.join(getTilesDir(), `floor_${floor}`, tileDestName);
         const sourcePath = fs.existsSync(path.join(importedDir, file))
           ? path.join(importedDir, file)
           : path.join(originalDir, file);
 
-        if (!fs.existsSync(tilePath)) {
-          fs.copyFileSync(sourcePath, tilePath);
-        }
+        fs.copyFileSync(sourcePath, tilePath);
       }
 
-      // Salva metadados
       for (const floor in metadata) {
-        const metadataFile = path.join(
-          tilesDir,
-          `floor_${floor}`,
-          "metadata.json"
-        );
-        fs.writeFileSync(
-          metadataFile,
-          JSON.stringify(metadata[floor], null, 2),
-          "utf-8"
-        );
+        const metadataFile = path.join(tilesDir, `floor_${floor}`, "metadata.json");
+        fs.writeFileSync(metadataFile, JSON.stringify(metadata[floor], null, 2), "utf-8");
       }
 
-      const totalTiles = Object.values(metadata).reduce(
-        (sum, tiles) => sum + tiles.length,
-        0
-      );
+      const totalTiles = Object.values(metadata).reduce((sum, tiles) => sum + tiles.length, 0);
 
       return {
         success: true,
@@ -127,14 +102,7 @@ export class TileGeneratorService {
     }
   }
 
-  /**
-   * Retorna tile específico por andar e coordenadas.
-   */
-  static getTile(
-    floor: number,
-    baseX: number,
-    baseY: number
-  ): Buffer | null {
+  static getTile(floor: number, baseX: number, baseY: number): Buffer | null {
     try {
       const tileName = `tile_${baseX}_${baseY}.png`;
       const tilePath = path.join(getTilesDir(), `floor_${floor}`, tileName);
@@ -148,16 +116,9 @@ export class TileGeneratorService {
     return null;
   }
 
-  /**
-   * Retorna metadados de todos os tiles de um andar.
-   */
   static getFloorMetadata(floor: number): TileMetadata[] {
     try {
-      const metadataFile = path.join(
-        getTilesDir(),
-        `floor_${floor}`,
-        "metadata.json"
-      );
+      const metadataFile = path.join(getTilesDir(), `floor_${floor}`, "metadata.json");
       if (fs.existsSync(metadataFile)) {
         const content = fs.readFileSync(metadataFile, "utf-8");
         return JSON.parse(content);
@@ -168,20 +129,15 @@ export class TileGeneratorService {
     return [];
   }
 
-  /**
-   * Retorna lista de andares processados.
-   */
   static getProcessedFloors(): number[] {
     try {
       const tilesDir = getTilesDir();
       if (!fs.existsSync(tilesDir)) return [];
 
-      const dirs = fs
-        .readdirSync(tilesDir)
-        .filter((d) => d.startsWith("floor_"));
+      const dirs = fs.readdirSync(tilesDir).filter((dir) => dir.startsWith("floor_"));
       const floors = dirs
-        .map((d) => parseInt(d.replace("floor_", ""), 10))
-        .filter((f) => !isNaN(f));
+        .map((dir) => parseInt(dir.replace("floor_", ""), 10))
+        .filter((floor) => !isNaN(floor));
 
       return floors.sort((a, b) => a - b);
     } catch {

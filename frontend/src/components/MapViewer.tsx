@@ -10,9 +10,14 @@ interface MapViewerProps {
   selectedFloor: number;
   showGlobalAnnotations: boolean;
   showFloorAnnotations: boolean;
+  showTibiaGlobalMarkers: boolean;
+  showTibiaFloorMarkers: boolean;
   showPlaceLabels: boolean;
   annotationsRevision: number;
+  tibiaMarkersRevision: number;
+  resourcesRevision: number;
   annotationsByFloor: Record<number, ExportAnnotation[]>;
+  tibiaMarkersByFloor: Record<number, ExportAnnotation[]>;
   onFloorAnnotationsChange: (floor: number, annotations: ExportAnnotation[]) => void;
 }
 
@@ -86,9 +91,14 @@ export function MapViewer({
   selectedFloor,
   showGlobalAnnotations,
   showFloorAnnotations,
+  showTibiaGlobalMarkers,
+  showTibiaFloorMarkers,
   showPlaceLabels,
   annotationsRevision,
+  tibiaMarkersRevision,
+  resourcesRevision,
   annotationsByFloor,
+  tibiaMarkersByFloor,
   onFloorAnnotationsChange,
 }: MapViewerProps) {
   const mapRef = useRef<HTMLDivElement>(null);
@@ -213,7 +223,7 @@ export function MapViewer({
   useEffect(() => {
     if (!mapInstanceRef.current || !tileLayerGroupRef.current) return;
     void loadFloorTiles(selectedFloor);
-  }, [selectedFloor]);
+  }, [selectedFloor, resourcesRevision]);
 
   useEffect(() => {
     const map = mapInstanceRef.current;
@@ -334,7 +344,7 @@ export function MapViewer({
           L.latLng(normalizedY, normalizedX + tileSize)
         );
 
-        const tileUrl = getTileImageUrl(floor, tile.baseX, tile.baseY);
+        const tileUrl = getTileImageUrl(floor, tile.baseX, tile.baseY, resourcesRevision);
         const image = L.imageOverlay(tileUrl, tileBounds, { opacity: 1, interactive: false });
         image.on("error", () => {
           console.error("Erro ao carregar tile:", { floor, baseX: tile.baseX, baseY: tile.baseY, tileUrl });
@@ -437,10 +447,14 @@ export function MapViewer({
           redoNonce={redoNonce}
           clearNonce={clearNonce}
           annotationsRevision={annotationsRevision}
+          tibiaMarkersRevision={tibiaMarkersRevision}
           initialAnnotations={annotationsByFloor[selectedFloor] ?? []}
           annotationsByFloor={annotationsByFloor}
+          tibiaMarkersByFloor={tibiaMarkersByFloor}
           showGlobalAnnotations={showGlobalAnnotations}
           showFloorAnnotations={showFloorAnnotations}
+          showTibiaGlobalMarkers={showTibiaGlobalMarkers}
+          showTibiaFloorMarkers={showTibiaFloorMarkers}
           onHistoryChange={({ canUndo: undo, canRedo: redo }) => {
             setCanUndo(undo);
             setCanRedo(redo);

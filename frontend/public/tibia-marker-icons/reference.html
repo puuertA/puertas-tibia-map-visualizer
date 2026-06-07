@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Icones de marcacao do Tibia</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 24px;
+        background: #0d1117;
+        color: #f8fafc;
+        font-family: Arial, sans-serif;
+      }
+
+      h1 {
+        margin: 0 0 8px;
+        font-size: 22px;
+      }
+
+      p {
+        margin: 0 0 18px;
+        color: #b6c3d6;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+        gap: 10px;
+        max-width: 900px;
+      }
+
+      .slot {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px;
+        background: #1b2230;
+        border: 1px solid #2b3448;
+        border-radius: 8px;
+      }
+
+      .preview {
+        width: 32px;
+        height: 32px;
+        display: grid;
+        place-items: center;
+        background: #243047;
+        border: 1px solid #35445f;
+        border-radius: 999px;
+        color: #fff;
+        font-size: 12px;
+        font-weight: 900;
+      }
+
+      .preview img {
+        width: 24px;
+        height: 24px;
+        display: block;
+      }
+
+      code {
+        color: #93c5fd;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Icones de marcacao</h1>
+    <p>Estes sao os 20 arquivos PNG que o app usa automaticamente para as marcacoes importadas do client Tibia.</p>
+    <div class="grid" id="grid"></div>
+
+    <script>
+      const grid = document.getElementById("grid");
+
+      for (let icon = 0; icon < 20; icon += 1) {
+        const slot = document.createElement("div");
+        slot.className = "slot";
+
+        const preview = document.createElement("div");
+        preview.className = "preview";
+        preview.textContent = icon;
+
+        const image = document.createElement("img");
+        image.src = `${icon}.png`;
+        image.alt = "";
+        image.onload = () => {
+          preview.textContent = "";
+          preview.appendChild(image);
+        };
+
+        const label = document.createElement("code");
+        label.textContent = `${icon}.png`;
+
+        slot.append(preview, label);
+        grid.appendChild(slot);
+      }
+    </script>
+  </body>
+</html>
