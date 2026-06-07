@@ -48,6 +48,12 @@ interface PixelOverlayGeometry {
   centerY: number;
 }
 
+const TILE_SIZE = 256;
+const TIBIA_MAP_ORIGIN_X = 31744;
+const TIBIA_MAP_ORIGIN_Y = 30976;
+const TIBIA_SURFACE_HEIGHT = 2048;
+const TIBIA_MAP_MAX_BASE_Y = TIBIA_MAP_ORIGIN_Y + TIBIA_SURFACE_HEIGHT - TILE_SIZE;
+
 function toTibiaLevelLabel(floor: number) {
   const delta = 7 - floor;
   if (delta === 0) return "nível 0";
@@ -173,7 +179,7 @@ export function MapViewer({
         mapX,
         mapY,
         tibiaX: transform.minX + mapX,
-        tibiaY: transform.maxY - mapY,
+        tibiaY: transform.maxY + TILE_SIZE - mapY,
         z: selectedFloorRef.current,
       };
     };
@@ -328,9 +334,9 @@ export function MapViewer({
         return;
       }
 
-      const tileSize = 256;
-      const minX = Math.min(...metadata.map((t) => t.baseX));
-      const maxY = Math.max(...metadata.map((t) => t.baseY));
+      const tileSize = TILE_SIZE;
+      const minX = TIBIA_MAP_ORIGIN_X;
+      const maxY = TIBIA_MAP_MAX_BASE_Y;
       const nextTransform = { minX, maxY };
       floorTransformRef.current = nextTransform;
       setFloorTransform(nextTransform);
